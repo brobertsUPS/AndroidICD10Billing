@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ff45d5ff">
+
+    <TextView
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"
+        android:text="@string/icd10Label"
+        android:id="@+id/ICD10Label"
+        android:gravity="center"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_margin="10dp"
+        android:textColor="#ffffffff" />
+
+    <TextView
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"
+        android:text="@string/icd9Label"
+        android:id="@+id/ICD9Label"
+        android:gravity="center"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_margin="10dp"
+        android:textColor="#ffffffff" />
+
+    <TextView
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".50"
+        android:text="ICD10Text"
+        android:id="@+id/ICD10Text"
+        android:layout_below="@+id/ICD10Label"
+        android:layout_alignLeft="@+id/ICD10Label"
+        android:layout_alignStart="@+id/ICD10Label"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="#ff858585"
+        android:textColor="#ffffffff" />
+
+    <TextView
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".50"
+        android:text="ICD9Text"
+        android:id="@+id/ICD9Text"
+        android:layout_below="@+id/ICD10Label"
+        android:layout_alignRight="@+id/ICD9Label"
+        android:layout_alignEnd="@+id/ICD9Label"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:background="#ff858585"
+        android:textColor="#ffffffff" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/icdDescriptionLabel"
+        android:id="@+id/icdDescriptionLabel"
+        android:layout_below="@+id/ICD10Text"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textColor="#ffffffff" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ICD Description Text"
+        android:id="@+id/icdDescriptionText"
+        android:layout_below="@+id/icdDescriptionLabel"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="#ff858585"
+        android:textColor="#ffffffff" />
+
+
+</RelativeLayout>
