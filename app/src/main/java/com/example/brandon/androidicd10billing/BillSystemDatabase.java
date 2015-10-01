@@ -73,4 +73,45 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         c.moveToFirst();
         return c;
     }
+
+    public Cursor searchPatients(String patientInput){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {"%" + patientInput + "%", "%" + patientInput + "%"}; //pass the search input to both parameters in the query
+        Cursor c = db.rawQuery("SELECT pID as _id, email, date_of_birth, f_name, l_name FROM Patient WHERE f_name LIKE ? OR l_name LIKE ?", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor searchDoctorsWithType(String doctorInput, int type){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {"%" + doctorInput + "%", "%" + doctorInput + "%", type + ""}; //pass the search input to both parameters in the query
+        Cursor c = db.rawQuery("SELECT dID as _id, email, f_name, l_name, type FROM Doctor WHERE f_name LIKE ? OR l_name LIKE ? AND type=?", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor searchPlaceOfService(String siteInput){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {"%" + siteInput + "%"}; //pass the search input to both parameters in the query
+        Cursor c = db.rawQuery("SELECT placeID AS _id, place_description FROM Place_of_service WHERE place_description LIKE ?", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor searchRoom(String roomInput){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {"%" + roomInput + "%"}; //pass the search input to both parameters in the query
+        Cursor c = db.rawQuery("SELECT roomID as _id, room_description FROM Room WHERE room_description LIKE ?", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor searchVisitCodes(String cptInput, String apt_type){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {"%" + cptInput + "%", "%" + cptInput + "%", apt_type}; //pass the search input to both parameters in the query
+        Cursor c = db.rawQuery("SELECT ROWID AS _id, apt_code, type_description, code_description FROM Apt_type WHERE apt_code LIKE ? OR code_description LIKE ? AND type_description=?", args);
+        c.moveToFirst();
+        return c;
+    }
+
 }

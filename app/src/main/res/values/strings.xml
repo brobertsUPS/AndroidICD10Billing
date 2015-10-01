@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ICD10 Lookup</string>
+    <string name="app_name">ICD10 Billing</string>
 
     <string name="action_settings">Settings</string>
 
@@ -11,4 +11,15 @@
     <string name="search_hint">Search Codes</string>
     <string name="title_activity_search_codes">Search Results</string>
     <string name="action_search">Action Search</string>
+
+    <string name="date_hint">Date</string>
+    <string name="patient_name_hint">Patient Name</string>
+    <string name="date_of_birth_hint">Date Of Birth</string>
+    <string name="referring_doctor_hint">Referring Doctor</string>
+    <string name="room_hint">Room</string>
+    <string name="site_hint">Site</string>
+    <string name="cpt_code_hint">CPT</string>
+    <string name="pc_code_hint">Procedure</string>
+    <string name="mc_code_hint">Medicare</string>
+
 </resources>
