@@ -1,6 +1,7 @@
 package com.example.brandon.androidicd10billing;
 
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -9,8 +10,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
+import android.widget.GridView;
+import android.widget.ListAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,12 +28,13 @@ import java.util.HashMap;
 public class BillActivity extends AppCompatActivity{
 
     public BillSystemDatabase db;
+    public GridView gv;
 
     public boolean complete;
-    public ArrayList<String> visitCodes;
-    public HashMap<String, ArrayList<Integer>> visitCodeToICD10ID;
-    public HashMap<String, Integer> visitCodeToModifierID;
-    public HashMap<Integer, ArrayList<String>> icd10IDToExtensionCode;
+    public ArrayList<String> visitCodes = new ArrayList<String>();
+    public HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = new HashMap<String, ArrayList<Integer>>();
+    public HashMap<String, Integer> visitCodeToModifierID = new HashMap<String, Integer>();
+    public HashMap<Integer, ArrayList<String>> icd10IDToExtensionCode = new HashMap<Integer, ArrayList<String>>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +42,10 @@ public class BillActivity extends AppCompatActivity{
         setContentView(R.layout.activity_bill);
         db = new BillSystemDatabase(this);
         addAutocompleteAdapters();
+
+        gv = (GridView) findViewById(R.id.visitCodeGridView);
+        gv.setAdapter(new GridAdapter(this, visitCodes));
+
     }
 
     /**
@@ -47,7 +57,9 @@ public class BillActivity extends AppCompatActivity{
         addDoctorCodeCompletionAdapter();
         addSiteCompletionAdapter();
         addRoomCompletionAdapter();
-        addVisitCodeCompletionAdapters();
+        addCPTCodeCompletionAdapter();
+        addPCCodeCompletionAdapter();
+        addMCCodeCompletionAdapter();
     }
 
     public void addPatientCodeCompletionAdapter(){
@@ -148,8 +160,19 @@ public class BillActivity extends AppCompatActivity{
         });
     }
 
-    public void addVisitCodeCompletionAdapters(){
+    public void addCPTCodeCompletionAdapter(){
         AutoCompleteTextView cptTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_cpt_code);
+        cptTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor c = (Cursor) parent.getAdapter().getItem(position);
+                String visitCode = c.getString(c.getColumnIndex("apt_code"));
+                Toast.makeText(BillActivity.this, "CPT Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+                addVisitCodeToDataSource(visitCode);
+                gv = (GridView) findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
+            }
+        });
         cptTextView.setThreshold(0);
         SimpleCursorAdapter cptAdapter;
         cptAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
@@ -164,13 +187,24 @@ public class BillActivity extends AppCompatActivity{
         });
         cptAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
             public CharSequence convertToString(Cursor cur) {
-                Toast.makeText(BillActivity.this, "CPT Code Selected", Toast.LENGTH_SHORT).show();
-                int index = cur.getColumnIndex("apt_code");
-                return cur.getString(index);
+                return (CharSequence)"";                        //we don't actually want to keep this data in the textview
             }
         });
+    }
 
+    public void addPCCodeCompletionAdapter(){
         AutoCompleteTextView pcTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_pc_code);
+        pcTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor c = (Cursor) parent.getAdapter().getItem(position);
+                String visitCode = c.getString(c.getColumnIndex("apt_code"));
+                addVisitCodeToDataSource(visitCode);
+                gv = (GridView) findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
+                Toast.makeText(BillActivity.this, "PC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+            }
+        });
         pcTextView.setThreshold(0);
         SimpleCursorAdapter pcAdapter;
         pcAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
@@ -185,13 +219,24 @@ public class BillActivity extends AppCompatActivity{
         });
         pcAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
             public CharSequence convertToString(Cursor cur) {
-                Toast.makeText(BillActivity.this, "CPT Code Selected", Toast.LENGTH_SHORT).show();
-                int index = cur.getColumnIndex("apt_code");
-                return cur.getString(index);
+                return (CharSequence)"";
             }
         });
+    }
 
+    public void addMCCodeCompletionAdapter(){
         final AutoCompleteTextView mcTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_mc_code);
+        mcTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor c = (Cursor) parent.getAdapter().getItem(position);
+                String visitCode = c.getString(c.getColumnIndex("apt_code"));
+                addVisitCodeToDataSource(visitCode);
+                gv = (GridView) findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
+                Toast.makeText(BillActivity.this, "MC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+            }
+        });
         mcTextView.setThreshold(0);
         final SimpleCursorAdapter mcAdapter;
         mcAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
@@ -205,11 +250,15 @@ public class BillActivity extends AppCompatActivity{
             } });
         mcAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
             public CharSequence convertToString(Cursor cur) {
-                Toast.makeText(BillActivity.this, "CPT Code Selected", Toast.LENGTH_SHORT).show();
-                int index = cur.getColumnIndex("apt_code");
-                return cur.getString(index);
+                return (CharSequence)"";
             }
         });
+    }
+
+    public void addVisitCodeToDataSource(String visitCode){
+        if(!visitCodes.contains(visitCode)){//only add the visitCode if it is not already in there
+            visitCodes.add(visitCode);
+        }
     }
 
     public void setDateForBill(){
