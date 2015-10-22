@@ -21,5 +21,6 @@
     <string name="cpt_code_hint">CPT</string>
     <string name="pc_code_hint">Procedure</string>
     <string name="mc_code_hint">Medicare</string>
+    <string name="customVisitCodeString">Insert Custom Visit Code</string>
 
 </resources>

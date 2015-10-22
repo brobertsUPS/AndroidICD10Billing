@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -14,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
+import android.widget.FilterQueryProvider;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -185,17 +188,59 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_drill_down_code_search, menu);
 
+        //set up how the autocomplete textview will look
+        AutoCompleteTextView codeTextView = new AutoCompleteTextView(this);
+        codeTextView.setHint("Search Codes");
+        codeTextView.setTextColor(ContextCompat.getColor(this.getBaseContext(), R.color.black));
+        codeTextView.setThreshold(0);
+        codeTextView.setWidth(400);
 
-        // Get the SearchView and set the searchable configuration
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        menu.add(0, 0, 1, "").setActionView(codeTextView).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        // Make the search happen for the SearchCodesActivity class
-        ComponentName cn = new ComponentName(this, SearchCodesActivity.class);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(cn));
+        codeTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor c = (Cursor) parent.getAdapter().getItem(position);
+                int icd10ID = c.getInt(c.getColumnIndex("_id"));
+                Intent i = new Intent(DrillDownCodeSearchActivity.this, ICDDetailActivity.class);
+                i.putExtra("icd10ID", icd10ID);
+                startActivity(i);
+            }
+        });
+        codeTextView.setThreshold(0); //start searching after 1 letter is typed
 
-        //searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+        //set the adapter
+        SimpleCursorAdapter cptAdapter;
+        cptAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
+                new String[]{"description_text","ICD10_code"}, new int[]{android.R.id.text2, android.R.id.text1}, 0);
+        codeTextView.setAdapter(cptAdapter);
+
+        //do the search for the adapter
+        cptAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+            public Cursor runQuery(CharSequence str) {
+                return db.searchDirectlyForCodes("" +str);
+            }
+        });
+
+        //Get the string for the cursor
+        cptAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
+            public CharSequence convertToString(Cursor cur) {
+                int ICD10CodeIndex = cur.getColumnIndex("ICD10_code");
+                return cur.getString(ICD10CodeIndex);                //we don't actually want to keep this data in the textview
+            }
+        });
+
+
+//        // Get the SearchView and set the searchable configuration
+//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+//
+//        // Make the search happen for the SearchCodesActivity class
+//        ComponentName cn = new ComponentName(this, SearchCodesActivity.class);
+//        searchView.setSearchableInfo(searchManager.getSearchableInfo(cn));
+//
+//        //searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+//        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
         return true;
     }
 
