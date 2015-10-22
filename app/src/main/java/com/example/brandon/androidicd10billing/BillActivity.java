@@ -167,12 +167,14 @@ public class BillActivity extends AppCompatActivity{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
-                Toast.makeText(BillActivity.this, "CPT Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(BillActivity.this, "CPT Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) findViewById(R.id.visitCodeGridView);
                 gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
             }
         });
+
+        //set the adapter for displaying the results in a popup list
         cptTextView.setThreshold(0);
         SimpleCursorAdapter cptAdapter;
         cptAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
@@ -202,7 +204,7 @@ public class BillActivity extends AppCompatActivity{
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) findViewById(R.id.visitCodeGridView);
                 gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
-                Toast.makeText(BillActivity.this, "PC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(BillActivity.this, "PC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
             }
         });
         pcTextView.setThreshold(0);
@@ -234,7 +236,7 @@ public class BillActivity extends AppCompatActivity{
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) findViewById(R.id.visitCodeGridView);
                 gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
-                Toast.makeText(BillActivity.this, "MC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(BillActivity.this, "MC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
             }
         });
         mcTextView.setThreshold(0);
@@ -255,6 +257,10 @@ public class BillActivity extends AppCompatActivity{
         });
     }
 
+    /**
+     * Adds a visit code to the datasource to display in the gridview
+     * @param visitCode the visitcode to add
+     */
     public void addVisitCodeToDataSource(String visitCode){
         if(!visitCodes.contains(visitCode)){//only add the visitCode if it is not already in there
             visitCodes.add(visitCode);

@@ -1,11 +1,15 @@
 package com.example.brandon.androidicd10billing;
 
 import android.content.Context;
+import android.content.Intent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,16 +43,36 @@ public class GridAdapter extends BaseAdapter {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
-        TextView tv;
-        if (convertView == null) {
-            tv = new TextView(context);
-            tv.setLayoutParams(new GridView.LayoutParams(85, 85));
-        }
-        else {
-            tv = (TextView) convertView;
-        }
 
-        tv.setText(texts.get(position));
-        return tv;
+        Holder holder=new Holder();
+        View rowView;
+        LayoutInflater inflater = ( LayoutInflater )context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        rowView = inflater.inflate(R.layout.grid_row, null);
+
+        holder.tv = (TextView)rowView.findViewById(R.id.textView);
+        holder.modButton = (Button)rowView.findViewById(R.id.modButton);
+        holder.addVisitCodeButton = (Button) rowView.findViewById(R.id.addVisitCodeButton);
+        holder.deleteVisitCodeButton = (Button) rowView.findViewById(R.id.deleteVisitCodeButton);
+
+        holder.tv.setText(texts.get(position));
+
+        //begin the IC10 search
+        holder.addVisitCodeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(context, DrillDownCodeSearchActivity.class);
+                context.startActivity(i);
+            }
+        });
+
+        return rowView;
+    }
+
+    public class Holder
+    {
+        TextView tv;
+        Button modButton;
+        Button addVisitCodeButton;
+        Button deleteVisitCodeButton;
     }
 }
