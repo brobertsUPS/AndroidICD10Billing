@@ -10,31 +10,31 @@
         <activity
             android:name=".BillActivity"
             android:label="@string/app_name"
-            android:windowSoftInputMode="stateUnchanged">
+            android:windowSoftInputMode="stateUnchanged" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".DrillDownCodeSearchActivity"
             android:label="@string/app_name" >
-
         </activity>
-
         <activity
             android:name=".ICDDetailActivity"
             android:label="@string/title_activity_icddetail" >
         </activity>
-
         <activity
             android:name=".SearchCodesActivity"
             android:label="@string/title_activity_search_codes" >
-
-            <meta-data android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main" >
         </activity>
     </application>
 
