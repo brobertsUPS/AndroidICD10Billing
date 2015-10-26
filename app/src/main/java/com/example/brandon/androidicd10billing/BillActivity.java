@@ -3,10 +3,14 @@ package com.example.brandon.androidicd10billing;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.provider.ContactsContract;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +20,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
 import android.widget.GridView;
 import android.widget.ListAdapter;
+import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,10 +30,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class BillActivity extends AppCompatActivity{
+public class BillActivity extends Fragment{
 
     public BillSystemDatabase db;
     public GridView gv;
+    RelativeLayout billLayout;
 
     public boolean complete;
     public ArrayList<String> visitCodes = new ArrayList<String>();
@@ -37,16 +43,36 @@ public class BillActivity extends AppCompatActivity{
     public HashMap<Integer, ArrayList<String>> icd10IDToExtensionCode = new HashMap<Integer, ArrayList<String>>();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bill);
-        db = new BillSystemDatabase(this);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        FragmentActivity faActivity  = (FragmentActivity) super.getActivity();
+
+
+        billLayout = (RelativeLayout) inflater.inflate(R.layout.activity_bill, container, false);
+
+
+        db = new BillSystemDatabase(super.getActivity());
         addAutocompleteAdapters();
 
-        gv = (GridView) findViewById(R.id.visitCodeGridView);
-        gv.setAdapter(new GridAdapter(this, visitCodes));
+        gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView); //changed to llLayout.findViewById
+        gv.setAdapter(new GridAdapter(super.getActivity(), visitCodes));
+
+        //llLayout.findViewById(R.id.someGuiElement);
+
+        return billLayout;
 
     }
+
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_bill);
+//        db = new BillSystemDatabase(this);
+//        addAutocompleteAdapters();
+//
+//        gv = (GridView) findViewById(R.id.visitCodeGridView);
+//        gv.setAdapter(new GridAdapter(this, visitCodes));
+//
+//    }
 
     /**
      * Adds the adapters to listen in and bring up a popup for user searches
@@ -63,10 +89,10 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void addPatientCodeCompletionAdapter(){
-        AutoCompleteTextView patientTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
+        AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
         patientTextView.setThreshold(0);                                                            //set it so the user only has to type in one letter
         SimpleCursorAdapter patientAdapter;
-        patientAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,   //make a first name and last name adapter
+        patientAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_2, null,   //make a first name and last name adapter
                 new String[] {"f_name", "l_name"},
                 new int[] {android.R.id.text1, android.R.id.text2},
                 0);
@@ -88,10 +114,10 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void addDoctorCodeCompletionAdapter(){
-        AutoCompleteTextView doctorTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_referring_doctor);
+        AutoCompleteTextView doctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_referring_doctor);
         doctorTextView.setThreshold(0);
         SimpleCursorAdapter doctorAdapter;
-        doctorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
+        doctorAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_2, null,
                 new String[] {"f_name", "l_name"}, //"code_description"
                 new int[] {android.R.id.text1, android.R.id.text2},
                 0);
@@ -113,10 +139,10 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void addRoomCompletionAdapter(){
-        AutoCompleteTextView roomTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_room);
+        AutoCompleteTextView roomTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_room);
         roomTextView.setThreshold(0);
         SimpleCursorAdapter roomAdapter;
-        roomAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, null,
+        roomAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_1, null,
                 new String[] {"room_description"},
                 new int[] {android.R.id.text1},
                 0);
@@ -137,10 +163,10 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void addSiteCompletionAdapter(){
-        AutoCompleteTextView siteTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_site);
+        AutoCompleteTextView siteTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_site);
         siteTextView.setThreshold(0);
         SimpleCursorAdapter siteAdapter;
-        siteAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, null,
+        siteAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_1, null,
                 new String[] {"place_description"},
                 new int[] {android.R.id.text1},
                 0);
@@ -161,7 +187,7 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void addCPTCodeCompletionAdapter(){
-        AutoCompleteTextView cptTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_cpt_code);
+        AutoCompleteTextView cptTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_cpt_code);
         cptTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -169,15 +195,15 @@ public class BillActivity extends AppCompatActivity{
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
 //                Toast.makeText(BillActivity.this, "CPT Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
                 addVisitCodeToDataSource(visitCode);
-                gv = (GridView) findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
+                gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
             }
         });
 
         //set the adapter for displaying the results in a popup list
         cptTextView.setThreshold(0);
         SimpleCursorAdapter cptAdapter;
-        cptAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
+        cptAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_2, null,
                 new String[] {"apt_code", "code_description"}, //"code_description"
                 new int[] {android.R.id.text1, android.R.id.text2},
                 0);
@@ -195,21 +221,21 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void addPCCodeCompletionAdapter(){
-        AutoCompleteTextView pcTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_pc_code);
+        AutoCompleteTextView pcTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_pc_code);
         pcTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
                 addVisitCodeToDataSource(visitCode);
-                gv = (GridView) findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
+                gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
 //                Toast.makeText(BillActivity.this, "PC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
             }
         });
         pcTextView.setThreshold(0);
         SimpleCursorAdapter pcAdapter;
-        pcAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
+        pcAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_2, null,
                 new String[] {"apt_code", "code_description"}, //"code_description"
                 new int[] {android.R.id.text1, android.R.id.text2},
                 0);
@@ -227,21 +253,21 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void addMCCodeCompletionAdapter(){
-        final AutoCompleteTextView mcTextView = (AutoCompleteTextView) findViewById(R.id.autocomplete_mc_code);
+        final AutoCompleteTextView mcTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_mc_code);
         mcTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
                 addVisitCodeToDataSource(visitCode);
-                gv = (GridView) findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(BillActivity.this, visitCodes));
+                gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
 //                Toast.makeText(BillActivity.this, "MC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
             }
         });
         mcTextView.setThreshold(0);
         final SimpleCursorAdapter mcAdapter;
-        mcAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
+        mcAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_2, null,
                 new String[] {"apt_code", "code_description"}, //"code_description"
                 new int[] {android.R.id.text1, android.R.id.text2},
                 0);
@@ -268,7 +294,7 @@ public class BillActivity extends AppCompatActivity{
     }
 
     public void setDateForBill(){
-        TextView dateTV = (TextView) findViewById(R.id.autocomplete_date);
+        TextView dateTV = (TextView) billLayout.findViewById(R.id.autocomplete_date);
         long date = System.currentTimeMillis();
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM dd, yyyy");
@@ -297,10 +323,10 @@ public class BillActivity extends AppCompatActivity{
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_bill, menu);
-        return true;
+        inflater.inflate(R.menu.menu_bill, menu);
+        //return super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

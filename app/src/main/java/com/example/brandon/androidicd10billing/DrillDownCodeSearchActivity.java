@@ -1,65 +1,76 @@
 package com.example.brandon.androidicd10billing;
 
-import android.app.SearchManager;
-import android.content.ComponentName;
-import android.content.Context;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 
-public class DrillDownCodeSearchActivity extends AppCompatActivity {
+public class DrillDownCodeSearchActivity extends Fragment {
 
     public Cursor conditionLocations;
     public BillSystemDatabase db;
     public ListView lv;
     ListAdapter adapter;
+    FragmentActivity drillDownActivity;
+    ViewGroup drillDownContainer;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_drill_down_code_search);
-        lv = (ListView) findViewById(R.id.conditionLocations);
-        db = new BillSystemDatabase(this);
+        drillDownContainer = container;
+        drillDownActivity = (FragmentActivity) super.getActivity();
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {                   //This is a sub menu
+        RelativeLayout drillDownLayout = (RelativeLayout) inflater.inflate(R.layout.activity_drill_down_code_search, container, false);
 
-            if(extras.getBoolean("isFavoritesMenu"))
+        lv = (ListView) drillDownLayout.findViewById(R.id.conditionLocations);
+        db = new BillSystemDatabase(super.getActivity());
+
+
+        if(getArguments() != null) {                                //This is the root menu
+            Toast.makeText(getContext(), " Arguments not null " ,Toast.LENGTH_LONG);
+            if(getArguments().getBoolean("isFavoritesMenu"))
                 addRemoveFavoritesOnLongClickListener();
 
-            int LID = extras.getInt("lID");
+            int LID = this.getArguments().getInt("lID");
+
             conditionLocations = db.getSubLocations(LID);
             if(LID==0){ //make a root cell (no add to favorites option) if this is the favorites sub-menu
-                adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, conditionLocations, new String[]{"location_name"}, new int[]{android.R.id.text1}, 0);
+                adapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_1, conditionLocations, new String[]{"location_name"}, new int[]{android.R.id.text1}, 0);
             }else{
-                adapter = new LocationSubMenuCursorAdapter(this, R.layout.condition_location_row, conditionLocations, new String[]{"location_name"}, new int[]{R.id.text1}, 0);
+                adapter = new LocationSubMenuCursorAdapter(super.getActivity(), R.layout.condition_location_row, conditionLocations, new String[]{"location_name"}, new int[]{R.id.text1}, 0);
             }
-
-        } else {                                //This is the root menu
-
+        }else{
+            Toast.makeText(getContext(), " Arguments null " ,Toast.LENGTH_LONG);
             conditionLocations = db.getRootLocations();
-            adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, conditionLocations, new String[]{"location_name"}, new int[]{android.R.id.text1}, 0);
+            adapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_1, conditionLocations, new String[]{"location_name"}, new int[]{android.R.id.text1}, 0);
 
         }
         addListViewOnClick();
 
         lv.setAdapter(adapter);
+
+        return drillDownLayout;
     }
 
     /**
@@ -80,26 +91,44 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
                     makeFavoritesErrorAlertDialog();
                 } else {//Go to the next page (another drill down or detail page) and pass the ICD10ID
 
-                    if (!possibleSubLocations.moveToFirst())  //go to detail
-                        i = new Intent(DrillDownCodeSearchActivity.this, ICDDetailActivity.class);
-                    else
-                        i = new Intent(DrillDownCodeSearchActivity.this, DrillDownCodeSearchActivity.class);
+                    if (!possibleSubLocations.moveToFirst()) {  //go to detail page
+                        i = new Intent(drillDownActivity, ICDDetailActivity.class);
 
-                    if (LID == 0) { //if we are moving to the favorites section mark the next sub-menu as such
-                        i.putExtra("isFavoritesMenu", true);
-                    } else {
-                        i.putExtra("isFavoritesMenu", false);
+
+                        Cursor icd10IDCursor = db.getICD10IDForLocation(LID);//get the ICD10ID
+                        if(icd10IDCursor != null && icd10IDCursor.moveToFirst()){
+                            int icd10ID = icd10IDCursor.getInt(icd10IDCursor.getColumnIndex("ICD10_ID"));
+                            i.putExtra("icd10ID",icd10ID);
+                        }
+
+                        i.putExtra("lID", LID);//get the LID and pass it to the next page (could be drill down or detail page.
+                        getActivity().startActivity(i);
+
+                    }else { //start the new fragment with the correct information
+//                         Create new fragment and transaction
+                        Fragment newFragment = new DrillDownCodeSearchActivity();
+                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//
+//                        // Replace whatever is in the fragment_container view with this fragment,
+//                        // and add the transaction to the back stack
+                        transaction.replace(((ViewGroup)getView().getParent()).getId(), newFragment);
+                        transaction.addToBackStack(null);
+//
+                        Bundle bundle = new Bundle();
+
+//                        i = new Intent(drillDownActivity, DrillDownCodeSearchActivity.class);
+
+                        if (LID == 0) { //if we are moving to the favorites section mark the next sub-menu as such
+                            bundle.putBoolean("isFavoritesMenu", true);
+                        } else {
+                            bundle.putBoolean("isFavoritesMenu", false);
+                        }
+                        Toast.makeText(getContext(), "LID: " + LID, Toast.LENGTH_SHORT).show();
+                        // Commit the transaction
+                        bundle.putInt("lID", LID);// set LID
+                        newFragment.setArguments(bundle);
+                        transaction.commit();
                     }
-
-                    Cursor icd10IDCursor = db.getICD10IDForLocation(LID);//get the ICD10ID
-
-                    if(icd10IDCursor != null && icd10IDCursor.moveToFirst()){
-                        int icd10ID = icd10IDCursor.getInt(icd10IDCursor.getColumnIndex("ICD10_ID"));
-                        i.putExtra("icd10ID",icd10ID);
-                    }
-
-                    i.putExtra("lID", LID);//get the LID and pass it to the next page (could be drill down or detail page.
-                    startActivity(i);
                 }
             }
         });
@@ -132,7 +161,7 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
      * Popup a success alert for adding a location to the favorites list
      */
     public void makeFavoritesSuccessAlertDialog(){
-        AlertDialog alertDialog = new AlertDialog.Builder(DrillDownCodeSearchActivity.this).create();
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
         alertDialog.setTitle("Yay!");
         alertDialog.setMessage("The item was added to the favorites list!");
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -148,7 +177,7 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
      * Makes an alert message for when a user clicks the favorites item but don't have any favorites yet.
      */
     public void makeFavoritesErrorAlertDialog(){
-        AlertDialog alertDialog = new AlertDialog.Builder(DrillDownCodeSearchActivity.this).create();
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
         alertDialog.setTitle("Ooops!");
         alertDialog.setMessage("There does not appear to be any favorites in the database!");
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -165,7 +194,7 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
      */
     public void deleteFavoriteDialog(final int LID){
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Remove favorite?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -184,14 +213,14 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_drill_down_code_search, menu);
+        inflater.inflate(R.menu.menu_drill_down_code_search, menu);
 
         //set up how the autocomplete textview will look
-        AutoCompleteTextView codeTextView = new AutoCompleteTextView(this);
+        AutoCompleteTextView codeTextView = new AutoCompleteTextView(getActivity());
         codeTextView.setHint("Search Codes");
-        codeTextView.setTextColor(ContextCompat.getColor(this.getBaseContext(), R.color.black));
+        codeTextView.setTextColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.black));
         codeTextView.setThreshold(0);
         codeTextView.setWidth(400);
 
@@ -202,16 +231,16 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 int icd10ID = c.getInt(c.getColumnIndex("_id"));
-                Intent i = new Intent(DrillDownCodeSearchActivity.this, ICDDetailActivity.class);
+                Intent i = new Intent(drillDownActivity, ICDDetailActivity.class);
                 i.putExtra("icd10ID", icd10ID);
-                startActivity(i);
+                getActivity().startActivity(i);
             }
         });
         codeTextView.setThreshold(0); //start searching after 1 letter is typed
 
         //set the adapter
         SimpleCursorAdapter cptAdapter;
-        cptAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
+        cptAdapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_list_item_2, null,
                 new String[]{"description_text","ICD10_code"}, new int[]{android.R.id.text2, android.R.id.text1}, 0);
         codeTextView.setAdapter(cptAdapter);
 
@@ -230,7 +259,6 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
             }
         });
 
-
 //        // Get the SearchView and set the searchable configuration
 //        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 //        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
@@ -241,7 +269,7 @@ public class DrillDownCodeSearchActivity extends AppCompatActivity {
 //
 //        //searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 //        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
-        return true;
+//        return true;
     }
 
     @Override
