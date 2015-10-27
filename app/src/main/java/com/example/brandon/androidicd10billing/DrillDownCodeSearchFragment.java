@@ -22,6 +22,7 @@ import android.widget.FilterQueryProvider;
 import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
     ListAdapter adapter;
     FragmentActivity drillDownActivity;
     ViewGroup drillDownContainer;
+    RelativeLayout drillDownLayout;
     Fragment self = this;
 
     public DrillDownCodeSearchFragment(){
@@ -46,7 +48,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
         drillDownContainer = container;
         drillDownActivity = (FragmentActivity) super.getActivity();
 
-        FrameLayout drillDownLayout = (FrameLayout) inflater.inflate(R.layout.drill_down_fragment, container, false);
+        drillDownLayout = (RelativeLayout) inflater.inflate(R.layout.drill_down_fragment, container, false);
 
         lv = (ListView) drillDownLayout.findViewById(R.id.conditionLocations);
         db = new BillSystemDatabase(super.getActivity());
@@ -71,10 +73,56 @@ public class DrillDownCodeSearchFragment extends Fragment {
 
         }
         addListViewOnClick();
+        addSearchboxListener();
 
         lv.setAdapter(adapter);
 
         return drillDownLayout;
+    }
+
+    public void addSearchboxListener(){
+        AutoCompleteTextView codeTextView = (AutoCompleteTextView) drillDownLayout.findViewById(R.id.autocomplete_search);
+        codeTextView.setHint("Search Codes");
+        codeTextView.setTextColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.black));
+        codeTextView.setThreshold(0);
+
+        codeTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor c = (Cursor) parent.getAdapter().getItem(position);
+                int icd10ID = c.getInt(c.getColumnIndex("_id"));
+                Fragment newFragment = new ICDDetailFragment(); //make the new fragment that can be a detail page or a new drill down page
+                Bundle bundle = new Bundle();
+                bundle.putInt("icd10ID", icd10ID);
+                newFragment.setArguments(bundle);
+                FragmentTransaction transaction = drillDownActivity.getSupportFragmentManager().beginTransaction();
+                transaction.addToBackStack(null);
+                transaction.replace(R.id.drill_down_fragment, newFragment);
+                transaction.commit();
+            }
+        });
+        codeTextView.setThreshold(0); //start searching after 1 letter is typed
+
+        //set the adapter
+        SimpleCursorAdapter cptAdapter;
+        cptAdapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_list_item_2, null,
+                new String[]{"description_text","ICD10_code"}, new int[]{android.R.id.text2, android.R.id.text1}, 0);
+        codeTextView.setAdapter(cptAdapter);
+
+        //do the search for the adapter
+        cptAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+            public Cursor runQuery(CharSequence str) {
+                return db.searchDirectlyForCodes("" +str);
+            }
+        });
+
+        //Get the string for the cursor
+        cptAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
+            public CharSequence convertToString(Cursor cur) {
+                int ICD10CodeIndex = cur.getColumnIndex("ICD10_code");
+                return cur.getString(ICD10CodeIndex);                //we don't actually want to keep this data in the textview
+            }
+        });
     }
 
     /**
@@ -102,7 +150,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
                         newFragment = new ICDDetailFragment(); //set the fragment as the detail page
 
                         Cursor icd10IDCursor = db.getICD10IDForLocation(LID);//get the ICD10ID
-                        if(icd10IDCursor != null && icd10IDCursor.moveToFirst()){
+                        if (icd10IDCursor != null && icd10IDCursor.moveToFirst()) {
                             int icd10ID = icd10IDCursor.getInt(icd10IDCursor.getColumnIndex("ICD10_ID"));
                             bundle.putInt("icd10ID", icd10ID);
                             System.out.println("ICD10ID " + icd10ID);
@@ -110,7 +158,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
                         bundle.putInt("lID", LID);//get the LID and pass it to the next page (could be drill down or detail page.
                         newFragment.setArguments(bundle);
 
-                    }else {
+                    } else {
                         newFragment = new DrillDownCodeSearchFragment();
 
                         if (LID == 0) { //if we are moving to the favorites section mark the next sub-menu as such
@@ -143,31 +191,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
         });
     }
 
-    /**
-     * Registers a click with the add favorite button on a sub-menu
-     * @param v the button that was clicked
-     */
-    public void addFavorite(View v){
-        int LIDOfButtonLocation = (int) v.getTag();
-        db.addLocationToFavorites(LIDOfButtonLocation);
-        makeFavoritesSuccessAlertDialog();
-    }
 
-    /**
-     * Popup a success alert for adding a location to the favorites list
-     */
-    public void makeFavoritesSuccessAlertDialog(){
-        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-        alertDialog.setTitle("Yay!");
-        alertDialog.setMessage("The item was added to the favorites list!");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.show();
-    }
 
     /**
      * Makes an alert message for when a user clicks the favorites item but don't have any favorites yet.

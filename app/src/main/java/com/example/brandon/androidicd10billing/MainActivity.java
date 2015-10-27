@@ -1,15 +1,20 @@
 package com.example.brandon.androidicd10billing;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.design.widget.TabLayout;
+import android.view.View;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    public BillSystemDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,8 +24,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Tab 1"));
-        tabLayout.addTab(tabLayout.newTab().setText("Tab 2"));
+        tabLayout.addTab(tabLayout.newTab().setText("Bill"));
+        tabLayout.addTab(tabLayout.newTab().setText("Search"));
 //        tabLayout.addTab(tabLayout.newTab().setText("Tab 3"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
@@ -44,6 +49,33 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        db = new BillSystemDatabase(this);
+    }
+
+    /**
+     * Registers a click with the add favorite button on a sub-menu
+     * @param v the button that was clicked
+     */
+    public void addFavorite(View v){
+        int LIDOfButtonLocation = (int) v.getTag();
+        db.addLocationToFavorites(LIDOfButtonLocation);
+        makeFavoritesSuccessAlertDialog();
+    }
+
+    /**
+     * Popup a success alert for adding a location to the favorites list
+     */
+    public void makeFavoritesSuccessAlertDialog(){
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Yay!");
+        alertDialog.setMessage("The item was added to the favorites list!");
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
     }
 
     @Override
