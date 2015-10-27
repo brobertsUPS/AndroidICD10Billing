@@ -19,14 +19,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
+import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 
-public class DrillDownCodeSearchActivity extends Fragment {
+public class DrillDownCodeSearchFragment extends Fragment {
 
     public Cursor conditionLocations;
     public BillSystemDatabase db;
@@ -34,6 +34,11 @@ public class DrillDownCodeSearchActivity extends Fragment {
     ListAdapter adapter;
     FragmentActivity drillDownActivity;
     ViewGroup drillDownContainer;
+    Fragment self = this;
+
+    public DrillDownCodeSearchFragment(){
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -41,11 +46,10 @@ public class DrillDownCodeSearchActivity extends Fragment {
         drillDownContainer = container;
         drillDownActivity = (FragmentActivity) super.getActivity();
 
-        RelativeLayout drillDownLayout = (RelativeLayout) inflater.inflate(R.layout.activity_drill_down_code_search, container, false);
+        FrameLayout drillDownLayout = (FrameLayout) inflater.inflate(R.layout.drill_down_fragment, container, false);
 
         lv = (ListView) drillDownLayout.findViewById(R.id.conditionLocations);
         db = new BillSystemDatabase(super.getActivity());
-
 
         if(getArguments() != null) {                                //This is the root menu
             Toast.makeText(getContext(), " Arguments not null " ,Toast.LENGTH_LONG);
@@ -83,52 +87,44 @@ public class DrillDownCodeSearchActivity extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
 
-                Intent i;
                 int LID = (int) parent.getAdapter().getItemId(position);
                 Cursor possibleSubLocations = db.getSubLocations(LID);
 
                 if (LID == 0 && !possibleSubLocations.moveToFirst()) { //show an alert if we clicked the favorites menu and there are none
                     makeFavoritesErrorAlertDialog();
-                } else {//Go to the next page (another drill down or detail page) and pass the ICD10ID
+                } else {//Go to the next page (another drill down or detail page)
 
-                    if (!possibleSubLocations.moveToFirst()) {  //go to detail page
-                        i = new Intent(drillDownActivity, ICDDetailActivity.class);
+                    Fragment newFragment; //make the new fragment that can be a detail page or a new drill down page
+                    Bundle bundle = new Bundle();
 
+                    //go to detail page
+                    if (!possibleSubLocations.moveToFirst()) {
+                        newFragment = new ICDDetailFragment(); //set the fragment as the detail page
 
                         Cursor icd10IDCursor = db.getICD10IDForLocation(LID);//get the ICD10ID
                         if(icd10IDCursor != null && icd10IDCursor.moveToFirst()){
                             int icd10ID = icd10IDCursor.getInt(icd10IDCursor.getColumnIndex("ICD10_ID"));
-                            i.putExtra("icd10ID",icd10ID);
+                            bundle.putInt("icd10ID", icd10ID);
+                            System.out.println("ICD10ID " + icd10ID);
                         }
+                        bundle.putInt("lID", LID);//get the LID and pass it to the next page (could be drill down or detail page.
+                        newFragment.setArguments(bundle);
 
-                        i.putExtra("lID", LID);//get the LID and pass it to the next page (could be drill down or detail page.
-                        getActivity().startActivity(i);
-
-                    }else { //start the new fragment with the correct information
-//                         Create new fragment and transaction
-                        Fragment newFragment = new DrillDownCodeSearchActivity();
-                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-//
-//                        // Replace whatever is in the fragment_container view with this fragment,
-//                        // and add the transaction to the back stack
-                        transaction.replace(((ViewGroup)getView().getParent()).getId(), newFragment);
-                        transaction.addToBackStack(null);
-//
-                        Bundle bundle = new Bundle();
-
-//                        i = new Intent(drillDownActivity, DrillDownCodeSearchActivity.class);
+                    }else {
+                        newFragment = new DrillDownCodeSearchFragment();
 
                         if (LID == 0) { //if we are moving to the favorites section mark the next sub-menu as such
                             bundle.putBoolean("isFavoritesMenu", true);
                         } else {
                             bundle.putBoolean("isFavoritesMenu", false);
                         }
-                        Toast.makeText(getContext(), "LID: " + LID, Toast.LENGTH_SHORT).show();
-                        // Commit the transaction
                         bundle.putInt("lID", LID);// set LID
                         newFragment.setArguments(bundle);
-                        transaction.commit();
                     }
+                    FragmentTransaction transaction = drillDownActivity.getSupportFragmentManager().beginTransaction();
+                    transaction.replace(R.id.drill_down_fragment, newFragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
                 }
             }
         });
@@ -231,7 +227,7 @@ public class DrillDownCodeSearchActivity extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 int icd10ID = c.getInt(c.getColumnIndex("_id"));
-                Intent i = new Intent(drillDownActivity, ICDDetailActivity.class);
+                Intent i = new Intent(drillDownActivity, ICDDetailFragment.class);
                 i.putExtra("icd10ID", icd10ID);
                 getActivity().startActivity(i);
             }
@@ -270,6 +266,7 @@ public class DrillDownCodeSearchActivity extends Fragment {
 //        //searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 //        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
 //        return true;
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

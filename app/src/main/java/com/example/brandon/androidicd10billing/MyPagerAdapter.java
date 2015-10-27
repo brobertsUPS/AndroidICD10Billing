@@ -17,10 +17,10 @@ public class MyPagerAdapter extends FragmentStatePagerAdapter {
 
         switch (position) {
             case 0:
-                BillActivity tab1 = new BillActivity();
+                BillFragment tab1 = new BillFragment();
                 return tab1;
             case 1:
-                DrillDownCodeSearchActivity tab2 = new DrillDownCodeSearchActivity();
+                DrillDownCodeSearchFragment tab2 = new DrillDownCodeSearchFragment();
                 return tab2;
 //            case 2:
 //                TabFragment3 tab3 = new TabFragment3();

@@ -1,36 +1,29 @@
 package com.example.brandon.androidicd10billing;
 
 import android.database.Cursor;
-import android.database.DataSetObserver;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
 import android.widget.GridView;
-import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class BillActivity extends Fragment{
+public class BillFragment extends Fragment{
 
     public BillSystemDatabase db;
     public GridView gv;
@@ -47,7 +40,7 @@ public class BillActivity extends Fragment{
         FragmentActivity faActivity  = (FragmentActivity) super.getActivity();
 
 
-        billLayout = (RelativeLayout) inflater.inflate(R.layout.activity_bill, container, false);
+        billLayout = (RelativeLayout) inflater.inflate(R.layout.bill_fragment, container, false);
 
 
         db = new BillSystemDatabase(super.getActivity());
@@ -65,7 +58,7 @@ public class BillActivity extends Fragment{
 //    @Override
 //    protected void onCreate(Bundle savedInstanceState) {
 //        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_bill);
+//        setContentView(R.layout.bill_fragment);
 //        db = new BillSystemDatabase(this);
 //        addAutocompleteAdapters();
 //
@@ -193,7 +186,7 @@ public class BillActivity extends Fragment{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
-//                Toast.makeText(BillActivity.this, "CPT Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(BillFragment.this, "CPT Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
                 gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
@@ -230,7 +223,7 @@ public class BillActivity extends Fragment{
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
                 gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
-//                Toast.makeText(BillActivity.this, "PC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(BillFragment.this, "PC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
             }
         });
         pcTextView.setThreshold(0);
@@ -262,7 +255,7 @@ public class BillActivity extends Fragment{
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
                 gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
-//                Toast.makeText(BillActivity.this, "MC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(BillFragment.this, "MC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
             }
         });
         mcTextView.setThreshold(0);

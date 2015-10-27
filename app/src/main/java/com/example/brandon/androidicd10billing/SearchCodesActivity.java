@@ -51,7 +51,7 @@ public class SearchCodesActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
 
-                Intent i = new Intent(SearchCodesActivity.this, ICDDetailActivity.class);
+                Intent i = new Intent(SearchCodesActivity.this, ICDDetailFragment.class);
                 int ICD10_ID = (int) parent.getAdapter().getItemId(position);
 
                 i.putExtra("icd10ID", ICD10_ID);

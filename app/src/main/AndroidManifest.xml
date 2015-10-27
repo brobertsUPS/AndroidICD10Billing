@@ -17,10 +17,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ICDDetailActivity"
-            android:label="@string/title_activity_icddetail" >
-        </activity>
-        <activity
             android:name=".SearchCodesActivity"
             android:label="@string/title_activity_search_codes" >
             <meta-data

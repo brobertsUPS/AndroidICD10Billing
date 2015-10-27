@@ -7,9 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,7 +58,7 @@ public class GridAdapter extends BaseAdapter {
         holder.addVisitCodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(context, DrillDownCodeSearchActivity.class);
+                Intent i = new Intent(context, DrillDownCodeSearchFragment.class);
                 context.startActivity(i);
             }
         });
