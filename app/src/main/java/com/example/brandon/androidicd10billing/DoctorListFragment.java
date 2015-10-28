@@ -51,6 +51,7 @@ public class DoctorListFragment extends Fragment {
         lv.setAdapter(adapter);
         this.addDoctorButtonOnClickListener();
         this.addRemoveDoctorOnLongClickListener();
+        this.addListViewOnClick();
         updateList();
 
         return doctorLayout;
@@ -60,6 +61,31 @@ public class DoctorListFragment extends Fragment {
     public void onResume(){
         super.onResume();
         updateList();
+    }
+
+    /**
+     * Add the onItemClickListener to the ListView
+     * Navigates to sub-menu if there is one. Otherwise it goes to the detail page.
+     */
+    public void addListViewOnClick() {
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+
+                int dID = (int) parent.getAdapter().getItemId(position);
+                //get dID of the doctor
+
+                Fragment newFragment = new DoctorEditFragment(); //make the new fragment that can be a detail page or a new drill down page
+                Bundle bundle = new Bundle();
+                bundle.putInt("dID", dID);
+                newFragment.setArguments(bundle);
+                FragmentTransaction transaction = doctorActivity.getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.doctor_list_fragment_layout, newFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+        });
     }
 
     private void addDoctorButtonOnClickListener(){

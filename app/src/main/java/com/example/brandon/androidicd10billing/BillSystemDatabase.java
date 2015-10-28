@@ -144,10 +144,32 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         db.close();
     }
 
+    public Cursor getDoctorWithDID(int dID) {
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {dID + ""};
+        System.out.println("DID: " + dID);
+        Cursor c = db.rawQuery("SELECT * FROM Doctor WHERE dID=?", args);
+        c.moveToFirst();
+        return c;
+    }
+
     public void deleteDoctor(int dID){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {dID + ""};
         db.execSQL("DELETE FROM Doctor WHERE dID=?", args);
+        db.close();
+    }
+
+    public void updateDoctor(int dID, String fName, String lName, boolean isAdminDoc){
+        SQLiteDatabase db = getReadableDatabase();
+        int type;
+        if(isAdminDoc){
+            type = 1;
+        }else{
+            type = 0;
+        }
+        String[] args = {fName, lName, type + "", dID + ""};
+        db.execSQL("UPDATE Doctor SET f_name=?, l_name=?, type=? WHERE dID=?", args);
         db.close();
     }
 
@@ -161,7 +183,6 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
     public Cursor getPatientWithPID(int pID) {
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {pID + ""};
-        System.out.println("PID " + pID);
         Cursor c = db.rawQuery("SELECT * FROM Patient WHERE pID=?", args);
         c.moveToFirst();
         return c;
