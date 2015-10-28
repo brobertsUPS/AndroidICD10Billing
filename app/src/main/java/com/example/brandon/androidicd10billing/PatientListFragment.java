@@ -51,8 +51,40 @@ public class PatientListFragment extends Fragment {
         lv.setAdapter(adapter);
         this.addPatientButtonOnClickListener();
         this.addRemovePatientOnLongClickListener();
+        this.addListViewOnClick();
 
         return patientLayout;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        updateList();
+    }
+
+    /**
+     * Add the onItemClickListener to the ListView
+     * Navigates to sub-menu if there is one. Otherwise it goes to the detail page.
+     */
+    public void addListViewOnClick() {
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+
+                int pID = (int) parent.getAdapter().getItemId(position);
+                //get pID of the patient
+
+                Fragment newFragment = new PatientEditFragment(); //make the new fragment that can be a detail page or a new drill down page
+                Bundle bundle = new Bundle();
+                bundle.putInt("pID", pID);
+                newFragment.setArguments(bundle);
+                FragmentTransaction transaction = patientActivity.getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.patient_list_fragment_layout, newFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+        });
     }
 
 
@@ -84,7 +116,7 @@ public class PatientListFragment extends Fragment {
 
     public void deletePatientDialog(final int pID){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Remove doctor?")
+        builder.setMessage("Remove patient?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -108,8 +140,4 @@ public class PatientListFragment extends Fragment {
         lv.setAdapter(adapter);
         lv.deferNotifyDataSetChanged();
     }
-
-
-
-
 }

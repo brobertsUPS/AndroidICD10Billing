@@ -158,10 +158,26 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         db.close();
     }
 
+    public Cursor getPatientWithPID(int pID) {
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {pID + ""};
+        System.out.println("PID " + pID);
+        Cursor c = db.rawQuery("SELECT * FROM Patient WHERE pID=?", args);
+        c.moveToFirst();
+        return c;
+    }
+
     public void deletePatient(int pID){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {pID + ""};
         db.execSQL("DELETE FROM Patient WHERE pID=?", args);
+        db.close();
+    }
+
+    public void updatePatient(int pID, String fName, String lName, String dateOfBirth){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {dateOfBirth, fName, lName, pID + ""};
+        db.execSQL("UPDATE Patient SET date_of_birth=?, f_name=?, l_name=? WHERE pID=?", args);
         db.close();
     }
 }
