@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/doctor_edit_layout"
+    android:background="#ff45d5ff">
+
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:hint="First Name"
+        android:id="@+id/doctorFname"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text=""
+        android:hint="Last Name"
+        android:id="@+id/doctorLname"
+        android:layout_below="@+id/doctorFname"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Admin Doctor?"
+        android:id="@+id/doctorTypeSwitch"
+        android:layout_below="@+id/doctorLname"
+        android:layout_alignLeft="@+id/doctorLname"
+        android:layout_alignStart="@+id/doctorLname" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:id="@+id/saveDoctorButton"
+        android:layout_below="@+id/doctorTypeSwitch"
+        android:layout_centerHorizontal="true" />
+
+
+
+</RelativeLayout>

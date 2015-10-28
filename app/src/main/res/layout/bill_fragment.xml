@@ -3,7 +3,8 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".BillActivity">
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".BillActivity"
+    android:background="#ff45d5ff">
 
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -12,11 +13,9 @@
         android:id="@+id/scrollView">
 
         <LinearLayout
-
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:orientation="vertical" >
-
 
             <AutoCompleteTextView
                 xmlns:android="http://schemas.android.com/apk/res/android"

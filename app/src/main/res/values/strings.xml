@@ -25,5 +25,7 @@
     <string name="title_activity_main">MainActivity</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="addDoctor">Add Doctor</string>
+    <string name="addPatient">Add Patient</string>
 
 </resources>

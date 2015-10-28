@@ -114,4 +114,54 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         return c;
     }
 
+    public Cursor getDoctors(){
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT dID as _id, f_name FROM Doctor", new String[0]);
+        c.moveToFirst();
+        db.close();
+        return c;
+    }
+
+    public Cursor getPatients(){
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT pID as _id, f_name, l_name, date_of_birth FROM Patient", new String[0]);
+        c.moveToFirst();
+        db.close();
+        return c;
+    }
+
+    public void insertDoctor(String fName, String lName, boolean isAdminDoc){
+        SQLiteDatabase db = getReadableDatabase();
+        int type;
+        if(isAdminDoc){
+            type = 1; //set the type to admin
+        }else{
+            type = 0; //set the type to referring doctor
+        }
+        //skip the email (third arg) for now
+        String[] args = {fName, lName,"", type + ""};
+        db.execSQL("INSERT INTO Doctor (dID,f_name,l_name, email, type) VALUES (NULL,?,?,?,?)", args);
+        db.close();
+    }
+
+    public void deleteDoctor(int dID){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {dID + ""};
+        db.execSQL("DELETE FROM Doctor WHERE dID=?", args);
+        db.close();
+    }
+
+    public void insertPatient(String fName, String lName, String dateOfBirth){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {"", dateOfBirth, fName, lName,};
+        db.execSQL("INSERT INTO Patient (pID,email,date_of_birth,f_name,l_name) VALUES (NULL,?,?,?,?)", args);
+        db.close();
+    }
+
+    public void deletePatient(int pID){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {pID + ""};
+        db.execSQL("DELETE FROM Patient WHERE pID=?", args);
+        db.close();
+    }
 }

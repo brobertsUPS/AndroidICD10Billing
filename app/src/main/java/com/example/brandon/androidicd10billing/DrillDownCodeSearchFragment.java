@@ -34,7 +34,6 @@ public class DrillDownCodeSearchFragment extends Fragment {
     public ListView lv;
     ListAdapter adapter;
     FragmentActivity drillDownActivity;
-    ViewGroup drillDownContainer;
     RelativeLayout drillDownLayout;
     Fragment self = this;
 
@@ -45,7 +44,6 @@ public class DrillDownCodeSearchFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        drillDownContainer = container;
         drillDownActivity = (FragmentActivity) super.getActivity();
 
         drillDownLayout = (RelativeLayout) inflater.inflate(R.layout.drill_down_fragment, container, false);
@@ -97,7 +95,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
                 newFragment.setArguments(bundle);
                 FragmentTransaction transaction = drillDownActivity.getSupportFragmentManager().beginTransaction();
                 transaction.addToBackStack(null);
-                transaction.replace(R.id.drill_down_fragment, newFragment);
+                transaction.replace(R.id.drill_down_fragment_layout, newFragment);
                 transaction.commit();
             }
         });
@@ -170,7 +168,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
                         newFragment.setArguments(bundle);
                     }
                     FragmentTransaction transaction = drillDownActivity.getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.drill_down_fragment, newFragment);
+                    transaction.replace(R.id.drill_down_fragment_layout, newFragment);
                     transaction.addToBackStack(null);
                     transaction.commit();
                 }
@@ -190,8 +188,6 @@ public class DrillDownCodeSearchFragment extends Fragment {
             }
         });
     }
-
-
 
     /**
      * Makes an alert message for when a user clicks the favorites item but don't have any favorites yet.
