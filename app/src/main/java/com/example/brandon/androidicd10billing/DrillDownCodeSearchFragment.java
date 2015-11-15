@@ -52,7 +52,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
         db = new BillSystemDatabase(super.getActivity());
 
         if(getArguments() != null) {                                //This is the root menu
-            Toast.makeText(getContext(), " Arguments not null " ,Toast.LENGTH_LONG);
+
             if(getArguments().getBoolean("isFavoritesMenu"))
                 addRemoveFavoritesOnLongClickListener();
 
@@ -65,7 +65,6 @@ public class DrillDownCodeSearchFragment extends Fragment {
                 adapter = new LocationSubMenuCursorAdapter(super.getActivity(), R.layout.condition_location_row, conditionLocations, new String[]{"location_name"}, new int[]{R.id.text1}, 0);
             }
         }else{
-            Toast.makeText(getContext(), " Arguments null " ,Toast.LENGTH_LONG);
             conditionLocations = db.getRootLocations();
             adapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_1, conditionLocations, new String[]{"location_name"}, new int[]{android.R.id.text1}, 0);
 

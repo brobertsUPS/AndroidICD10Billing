@@ -4,16 +4,21 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class ICDDetailFragment extends Fragment {
@@ -34,10 +39,66 @@ public class ICDDetailFragment extends Fragment {
 
         Cursor detailInfo;
         if(getArguments() != null) {   //This is a sub menu
-            detailInfo = db.getCodesForICD10ID(getArguments().getInt("icd10ID"));
+            icd10ID = getArguments().getInt("icd10ID");
+            detailInfo = db.getCodesForICD10ID(icd10ID);
             loadDetailWithCursor(detailInfo);
         }
+
+        addICD10ToBillClickListener();
         return detailLayout;
+    }
+
+    public void addICD10ToBillClickListener(){
+
+        Button addICD10Button = (Button) detailLayout.findViewById(R.id.putICD10InBill);
+
+        addICD10Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<Fragment> fragments = getActivity().getSupportFragmentManager().getFragments();
+                int backStackCount = getActivity().getSupportFragmentManager().getBackStackEntryCount();
+                Toast.makeText(detailActivity, "backStackCount " + detailActivity.getSupportFragmentManager().getBackStackEntryCount(), Toast.LENGTH_SHORT).show();
+
+                for (int i = 0; i < fragments.size(); i++) {
+
+//                    FragmentManager.BackStackEntry backEntry = detailActivity.getSupportFragmentManager().getBackStackEntryAt(i);
+                    System.out.println("Fragment name " + fragments.get(i).getTag());
+
+                }
+
+//
+//                Fragment billFragment = detailActivity.getSupportFragmentManager().findFragmentByTag("BILL_FRAGMENT");
+////                Fragment billFragment = new BillFragment();
+////                Bundle bundle = new Bundle();//bundle and args
+//
+////                billFragment.setArguments(bundle);
+//                Bundle bundle = getArguments();
+//                bundle.putInt("icd10IDToAdd", icd10ID);
+//                FragmentTransaction transaction = detailActivity.getSupportFragmentManager().beginTransaction();
+//                transaction.remove(billFragment);
+//
+//                Fragment newInstance = recreateFragment(billFragment);
+//                transaction.replace(R.id.icd_detail_fragment_layout, newInstance, "BILL_FRAGMENT");
+//                transaction.addToBackStack(null);
+//                transaction.commit();
+            }
+        });
+    }
+
+    private Fragment recreateFragment(Fragment f)
+    {
+        try {
+            Fragment.SavedState savedState = getActivity().getSupportFragmentManager().saveFragmentInstanceState(f);
+
+            Fragment newInstance = f.getClass().newInstance();
+            newInstance.setInitialSavedState(savedState);
+
+            return newInstance;
+        }
+        catch (Exception e) // InstantiationException, IllegalAccessException
+        {
+            throw new RuntimeException("Cannot reinstantiate fragment " + f.getClass().getName(), e);
+        }
     }
 
     /**

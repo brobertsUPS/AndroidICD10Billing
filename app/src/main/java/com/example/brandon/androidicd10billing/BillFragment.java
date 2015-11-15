@@ -1,22 +1,27 @@
 package com.example.brandon.androidicd10billing;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,32 +29,39 @@ import java.util.HashMap;
 
 
 public class BillFragment extends Fragment{
+    private Fragment billfragment = this;
 
-    public BillSystemDatabase db;
-    public GridView gv;
-    RelativeLayout billLayout;
+    private BillSystemDatabase db;
+    private GridView gv;
+    private RelativeLayout billLayout;
+    private FragmentActivity billActivity;
 
-    public boolean complete;
-    public ArrayList<String> visitCodes = new ArrayList<String>();
-    public HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = new HashMap<String, ArrayList<Integer>>();
-    public HashMap<String, Integer> visitCodeToModifierID = new HashMap<String, Integer>();
-    public HashMap<Integer, ArrayList<String>> icd10IDToExtensionCode = new HashMap<Integer, ArrayList<String>>();
+    private boolean complete;
+    //The visitCodes in the bill (used for listing in the GridView)
+    private ArrayList<String> visitCodes = new ArrayList<String>();
+
+    //The map for icd10ids
+    private HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = new HashMap<String, ArrayList<Integer>>();
+    private HashMap<String, Integer> visitCodeToModifierID = new HashMap<String, Integer>();
+    private HashMap<Integer, ArrayList<String>> icd10IDToExtensionCode = new HashMap<Integer, ArrayList<String>>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        FragmentActivity faActivity  = (FragmentActivity) super.getActivity();
 
-
+        billActivity  = (FragmentActivity) super.getActivity();
         billLayout = (RelativeLayout) inflater.inflate(R.layout.bill_fragment, container, false);
-
 
         db = new BillSystemDatabase(super.getActivity());
         addAutocompleteAdapters();
 
         gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView); //changed to llLayout.findViewById
-        gv.setAdapter(new GridAdapter(super.getActivity(), visitCodes));
+        gv.setAdapter(new GridAdapter(super.getActivity(), visitCodes, billActivity, visitCodeToICD10ID, this));
 
-        //llLayout.findViewById(R.id.someGuiElement);
+        if(getArguments() != null) {
+            //icd10ID
+            int icd10IDToAdd = getArguments().getInt("icd10IDToAdd");
+            Toast.makeText(billActivity, "ICD10IDToADD " + getActivity().getSupportFragmentManager().getBackStackEntryCount(), Toast.LENGTH_SHORT).show();        //check if we received anything from the detail page
+        }
 
         return billLayout;
 
@@ -186,10 +198,9 @@ public class BillFragment extends Fragment{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
-//                Toast.makeText(BillFragment.this, "CPT Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
+                gv.setAdapter(new GridAdapter(getActivity(), visitCodes, billActivity, visitCodeToICD10ID, billfragment));
             }
         });
 
@@ -222,8 +233,7 @@ public class BillFragment extends Fragment{
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
-//                Toast.makeText(BillFragment.this, "PC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+                gv.setAdapter(new GridAdapter(getActivity(), visitCodes, billActivity, visitCodeToICD10ID, billfragment));
             }
         });
         pcTextView.setThreshold(0);
@@ -254,8 +264,7 @@ public class BillFragment extends Fragment{
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(getActivity(), visitCodes));
-//                Toast.makeText(BillFragment.this, "MC Code Selected " + visitCode, Toast.LENGTH_SHORT).show();
+                gv.setAdapter(new GridAdapter(getActivity(), visitCodes, billActivity, visitCodeToICD10ID, billfragment));
             }
         });
         mcTextView.setThreshold(0);
@@ -283,6 +292,9 @@ public class BillFragment extends Fragment{
     public void addVisitCodeToDataSource(String visitCode){
         if(!visitCodes.contains(visitCode)){//only add the visitCode if it is not already in there
             visitCodes.add(visitCode);
+            //create a space for the visit code on the map
+            visitCodeToICD10ID.put(visitCode, new ArrayList<Integer>());
+            visitCodeToModifierID.put(visitCode, null);
         }
     }
 
@@ -293,6 +305,8 @@ public class BillFragment extends Fragment{
         SimpleDateFormat sdf = new SimpleDateFormat("MM dd, yyyy");
         String dateString = sdf.format(date);
         dateTV.setText(dateString);
+//        InputMethodManager imm = (InputMethodManager) billActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+//        imm.hideSoftInputFromWindow(dateTV.getWindowToken(), 0);
     }
 
     public void moveVisitCodeUp(){

@@ -44,4 +44,12 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/addVisitCodeButton"
         android:layout_toEndOf="@+id/textView" />
+
+    <GridView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:id="@+id/icd_grid_view"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>

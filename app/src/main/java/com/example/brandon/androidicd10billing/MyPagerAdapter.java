@@ -3,13 +3,16 @@ package com.example.brandon.androidicd10billing;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 
 public class MyPagerAdapter extends FragmentStatePagerAdapter {
     int mNumOfTabs;
+    FragmentManager fm;
 
    public MyPagerAdapter(FragmentManager fm, int NumOfTabs) {
         super(fm);
         this.mNumOfTabs = NumOfTabs;
+        this.fm = fm;
     }
 
     @Override
