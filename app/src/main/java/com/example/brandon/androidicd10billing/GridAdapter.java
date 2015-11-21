@@ -2,6 +2,7 @@ package com.example.brandon.androidicd10billing;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -23,24 +24,20 @@ public class GridAdapter extends BaseAdapter {
 
     private Context context;
     private FragmentActivity billActivity;
-    private ArrayList<String> visitCodes;
-    public HashMap<String, ArrayList<Integer>> visitCodeToICD10ID;
-    public HashMap<String, Integer> visitCodeToModifierID;
-    public HashMap<Integer, ArrayList<String>> icd10IDToExtensionCode;
+    private Bill bill;
     public Fragment billFragment;
 
     public GridView icdGridview;
 
-    public GridAdapter(Context context, ArrayList<String> data, FragmentActivity billFragmentActivity, HashMap<String, ArrayList<Integer>> visitCodeToICD10ID, Fragment billFragment) {
+    public GridAdapter(Context context, Bill bill, FragmentActivity billFragmentActivity, Fragment billFragment) {
         billActivity = billFragmentActivity;
-        visitCodes = data;
+        this.bill = bill;
         this.context = context;
-        this.visitCodeToICD10ID = visitCodeToICD10ID;
         this.billFragment = billFragment;
     }
 
     public int getCount() {
-        return visitCodes.size();
+        return bill.getVisitCodes().size();
     }
 
     public Object getItem(int position) {
@@ -64,25 +61,29 @@ public class GridAdapter extends BaseAdapter {
         holder.deleteVisitCodeButton = (Button) rowView.findViewById(R.id.deleteVisitCodeButton);
         holder.icdGridView = (GridView) rowView.findViewById(R.id.icd_grid_view);
 
-        holder.tv.setText(visitCodes.get(position));
+        holder.tv.setText(bill.getVisitCodes().get(position));
+
+        final String visitCodeToAddTo = bill.getVisitCodes().get(position);
 
         //begin the IC10 search
         holder.addVisitCodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Fragment drillDownFragment = new DrillDownCodeSearchFragment();
-                //bundle and args
+                DrillDownCodeSearchFragment drillDownFragment = new DrillDownCodeSearchFragment();
+                bill.setVisitCodeToAddTo(visitCodeToAddTo);
+                drillDownFragment.setBill(bill);
                 FragmentTransaction transaction = billActivity.getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.bill_fragment_layout, drillDownFragment);
                 transaction.addToBackStack(null);
                 transaction.commit();
+
                 billActivity.getSupportFragmentManager().executePendingTransactions();
             }
         });
 
         //Get the icd10ids that correspond to the visitcode
-        System.out.println(visitCodes.get(position));
-        ArrayList<Integer> icdCodesForVisitCode = visitCodeToICD10ID.get(visitCodes.get(position));
+        System.out.println(bill.getVisitCodes().get(position));
+        ArrayList<Integer> icdCodesForVisitCode = bill.getVisitCodeToICD10ID().get(bill.getVisitCodes().get(position));
 
         //set the adapter for this specified row
         holder.icdGridView.setAdapter(new ICDGridAdapter(context, icdCodesForVisitCode, billActivity));

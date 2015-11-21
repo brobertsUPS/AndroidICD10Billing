@@ -29,6 +29,16 @@ public class ICDDetailFragment extends Fragment {
     public FragmentActivity detailActivity;
     public RelativeLayout detailLayout;
 
+    public Bill bill;
+
+    public ICDDetailFragment(){
+
+    }
+
+    public void setBill(Bill bill){
+        this.bill = bill;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         detailActivity = (FragmentActivity) super.getActivity();
@@ -55,32 +65,28 @@ public class ICDDetailFragment extends Fragment {
         addICD10Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Fragment> fragments = getActivity().getSupportFragmentManager().getFragments();
-                int backStackCount = getActivity().getSupportFragmentManager().getBackStackEntryCount();
-                Toast.makeText(detailActivity, "backStackCount " + detailActivity.getSupportFragmentManager().getBackStackEntryCount(), Toast.LENGTH_SHORT).show();
-
-                for (int i = 0; i < fragments.size(); i++) {
-
-//                    FragmentManager.BackStackEntry backEntry = detailActivity.getSupportFragmentManager().getBackStackEntryAt(i);
-                    System.out.println("Fragment name " + fragments.get(i).getTag());
-
-                }
-
+//                List<Fragment> fragments = getActivity().getSupportFragmentManager().getFragments();
+//                int backStackCount = getActivity().getSupportFragmentManager().getBackStackEntryCount();
+//                Toast.makeText(detailActivity, "backStackCount " + detailActivity.getSupportFragmentManager().getBackStackEntryCount(), Toast.LENGTH_SHORT).show();
 //
-//                Fragment billFragment = detailActivity.getSupportFragmentManager().findFragmentByTag("BILL_FRAGMENT");
-////                Fragment billFragment = new BillFragment();
-////                Bundle bundle = new Bundle();//bundle and args
+//                for (int i = 0; i < fragments.size(); i++) {
 //
-////                billFragment.setArguments(bundle);
-//                Bundle bundle = getArguments();
-//                bundle.putInt("icd10IDToAdd", icd10ID);
-//                FragmentTransaction transaction = detailActivity.getSupportFragmentManager().beginTransaction();
-//                transaction.remove(billFragment);
+////                    FragmentManager.BackStackEntry backEntry = detailActivity.getSupportFragmentManager().getBackStackEntryAt(i);
+//                    System.out.println("Fragment name " + fragments.get(i).getTag());
 //
-//                Fragment newInstance = recreateFragment(billFragment);
-//                transaction.replace(R.id.icd_detail_fragment_layout, newInstance, "BILL_FRAGMENT");
-//                transaction.addToBackStack(null);
-//                transaction.commit();
+//                }
+
+                BillFragment billFragment = new BillFragment();
+                billFragment.setBill(bill);
+
+                Bundle bundle = new Bundle();//bundle and args
+                bundle.putInt("icd10IDToAdd", icd10ID);
+                billFragment.setArguments(bundle);
+                FragmentTransaction transaction = detailActivity.getSupportFragmentManager().beginTransaction();
+
+                transaction.replace(R.id.icd_detail_fragment_layout, billFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
             }
         });
     }

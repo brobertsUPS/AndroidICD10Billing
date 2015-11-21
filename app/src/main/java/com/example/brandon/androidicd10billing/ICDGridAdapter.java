@@ -32,6 +32,7 @@ public class ICDGridAdapter extends BaseAdapter {
     }
 
     public int getCount() {
+        System.out.println("ICD10IDS size " + icd10IDs.size());
         return icd10IDs.size();
     }
 
@@ -49,26 +50,15 @@ public class ICDGridAdapter extends BaseAdapter {
         View rowView;
         LayoutInflater inflater = ( LayoutInflater )context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         rowView = inflater.inflate(R.layout.grid_row, null);
+        System.out.println(rowView);
 
         holder.tv = (TextView)rowView.findViewById(R.id.textView);
-//        holder.modButton = (Button)rowView.findViewById(R.id.modButton);
-//        holder.addVisitCodeButton = (Button) rowView.findViewById(R.id.addVisitCodeButton);
         holder.deleteVisitCodeButton = (Button) rowView.findViewById(R.id.deleteVisitCodeButton);
+        System.out.println(icd10IDs);
+        String icd10IDString = ""  + icd10IDs.get(position);
+        //get the string from the icd10id to put in the grid adapter
 
-        holder.tv.setText(icd10IDs.get(position));
-
-        //begin the IC10 search
-//        holder.addVisitCodeButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Fragment drillDownFragment = new DrillDownCodeSearchFragment();
-//                //bundle and args
-//                FragmentTransaction transaction = billActivity.getSupportFragmentManager().beginTransaction();
-//                transaction.replace(R.id.bill_fragment_layout, drillDownFragment);
-//                transaction.addToBackStack(null);
-//                transaction.commit();
-//            }
-//        });
+        holder.tv.setText(icd10IDString);
 
         return rowView;
     }
@@ -76,8 +66,6 @@ public class ICDGridAdapter extends BaseAdapter {
     public class Holder
     {
         TextView tv;
-        Button modButton;
-        Button addVisitCodeButton;
         Button deleteVisitCodeButton;
     }
 }

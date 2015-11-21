@@ -37,8 +37,14 @@ public class DrillDownCodeSearchFragment extends Fragment {
     RelativeLayout drillDownLayout;
     Fragment self = this;
 
+    public Bill bill;
+
     public DrillDownCodeSearchFragment(){
 
+    }
+
+    public void setBill(Bill bill){
+        this.bill = bill;
     }
 
     @Override
@@ -88,7 +94,8 @@ public class DrillDownCodeSearchFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getAdapter().getItem(position);
                 int icd10ID = c.getInt(c.getColumnIndex("_id"));
-                Fragment newFragment = new ICDDetailFragment(); //make the new fragment that can be a detail page or a new drill down page
+                ICDDetailFragment newFragment = new ICDDetailFragment(); //make the new fragment that can be a detail page or a new drill down page
+                newFragment.setBill(bill);
                 Bundle bundle = new Bundle();
                 bundle.putInt("icd10ID", icd10ID);
                 newFragment.setArguments(bundle);
@@ -139,12 +146,13 @@ public class DrillDownCodeSearchFragment extends Fragment {
                     makeFavoritesErrorAlertDialog();
                 } else {//Go to the next page (another drill down or detail page)
 
-                    Fragment newFragment; //make the new fragment that can be a detail page or a new drill down page
-                    Bundle bundle = new Bundle();
+
 
                     //go to detail page
                     if (!possibleSubLocations.moveToFirst()) {
-                        newFragment = new ICDDetailFragment(); //set the fragment as the detail page
+
+                        Bundle bundle = new Bundle();
+                        ICDDetailFragment newFragment = new ICDDetailFragment(); //set the fragment as the detail page
 
                         Cursor icd10IDCursor = db.getICD10IDForLocation(LID);//get the ICD10ID
                         if (icd10IDCursor != null && icd10IDCursor.moveToFirst()) {
@@ -154,10 +162,16 @@ public class DrillDownCodeSearchFragment extends Fragment {
                         }
                         bundle.putInt("lID", LID);//get the LID and pass it to the next page (could be drill down or detail page.
                         newFragment.setArguments(bundle);
+                        newFragment.setBill(bill);
+                        FragmentTransaction transaction = drillDownActivity.getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.drill_down_fragment_layout, newFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
 
                     } else {
-                        newFragment = new DrillDownCodeSearchFragment();
-
+                        Bundle bundle = new Bundle();
+                        DrillDownCodeSearchFragment newFragment = new DrillDownCodeSearchFragment();
+                        newFragment.setBill(bill);
                         if (LID == 0) { //if we are moving to the favorites section mark the next sub-menu as such
                             bundle.putBoolean("isFavoritesMenu", true);
                         } else {
@@ -165,11 +179,11 @@ public class DrillDownCodeSearchFragment extends Fragment {
                         }
                         bundle.putInt("lID", LID);// set LID
                         newFragment.setArguments(bundle);
+                        FragmentTransaction transaction = drillDownActivity.getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.drill_down_fragment_layout, newFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                     }
-                    FragmentTransaction transaction = drillDownActivity.getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.drill_down_fragment_layout, newFragment);
-                    transaction.addToBackStack(null);
-                    transaction.commit();
                 }
             }
         });

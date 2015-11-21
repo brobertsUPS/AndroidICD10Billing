@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 public class BillFragment extends Fragment{
     private Fragment billfragment = this;
 
@@ -36,14 +35,11 @@ public class BillFragment extends Fragment{
     private RelativeLayout billLayout;
     private FragmentActivity billActivity;
 
-    private boolean complete;
-    //The visitCodes in the bill (used for listing in the GridView)
-    private ArrayList<String> visitCodes = new ArrayList<String>();
+    private Bill bill;
 
-    //The map for icd10ids
-    private HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = new HashMap<String, ArrayList<Integer>>();
-    private HashMap<String, Integer> visitCodeToModifierID = new HashMap<String, Integer>();
-    private HashMap<Integer, ArrayList<String>> icd10IDToExtensionCode = new HashMap<Integer, ArrayList<String>>();
+    public BillFragment(){
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -55,29 +51,54 @@ public class BillFragment extends Fragment{
         addAutocompleteAdapters();
 
         gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView); //changed to llLayout.findViewById
-        gv.setAdapter(new GridAdapter(super.getActivity(), visitCodes, billActivity, visitCodeToICD10ID, this));
 
+        //fill the bill information or create a new one
+        if(bill == null){
+//            Toast.makeText(billActivity, "New Bill", Toast.LENGTH_SHORT).show();
+            bill = new Bill();
+        }else{
+//            Toast.makeText(billActivity, "Old Bill", Toast.LENGTH_SHORT).show();
+            loadBillFromDetailPage();
+        }
+
+        gv.setAdapter(new GridAdapter(super.getActivity(), bill, billActivity,this));
+
+        return billLayout;
+    }
+
+    public void loadBillFromDetailPage(){
+        //put the icd10 id with the visitCode
+        AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
+        patientTextView.setText(bill.patientName);
+
+        AutoCompleteTextView doctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_referring_doctor);
+        doctorTextView.setText(bill.referringDoctor);
+
+        AutoCompleteTextView roomTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_room);
+        roomTextView.setText(bill.room);
+
+        AutoCompleteTextView siteTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_site);
+        siteTextView.setText(bill.site);
+
+
+        //get the arguments that were passed to this fragment
         if(getArguments() != null) {
             //icd10ID
             int icd10IDToAdd = getArguments().getInt("icd10IDToAdd");
-            Toast.makeText(billActivity, "ICD10IDToADD " + getActivity().getSupportFragmentManager().getBackStackEntryCount(), Toast.LENGTH_SHORT).show();        //check if we received anything from the detail page
+            Toast.makeText(billActivity, "ICD10IDToADD " + icd10IDToAdd, Toast.LENGTH_SHORT).show();        //check if we received anything from the detail page
+            //set the bill if there was one
+
+            HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = bill.getVisitCodeToICD10ID();
+            System.out.println("VISITCODETOADDTO " + bill.visitCodeToAddTo);
+            ArrayList<Integer> ICD10IDs = visitCodeToICD10ID.get(bill.visitCodeToAddTo);
+            ICD10IDs.add(icd10IDToAdd);
+
+            gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
+            gv.setAdapter(new GridAdapter(getActivity(), bill, billActivity, billfragment));
         }
-
-        return billLayout;
-
+        //clear our the visitCodeToAddTo field in the bill
+        bill.visitCodeToAddTo = null;
     }
-
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.bill_fragment);
-//        db = new BillSystemDatabase(this);
-//        addAutocompleteAdapters();
-//
-//        gv = (GridView) findViewById(R.id.visitCodeGridView);
-//        gv.setAdapter(new GridAdapter(this, visitCodes));
-//
-//    }
 
     /**
      * Adds the adapters to listen in and bring up a popup for user searches
@@ -113,7 +134,9 @@ public class BillFragment extends Fragment{
             public CharSequence convertToString(Cursor cur) {
                 int fNameIndex = cur.getColumnIndex("f_name");
                 int lNameIndex = cur.getColumnIndex("l_name");
-                return cur.getString(fNameIndex) + " " + cur.getString(lNameIndex);                    //return the CharSequence to put in the textview
+                String patientName = cur.getString(fNameIndex) + " " + cur.getString(lNameIndex);
+                bill.setPatientName(patientName);
+                return patientName;                    //return the CharSequence to put in the textview
             }
         });
     }
@@ -138,7 +161,9 @@ public class BillFragment extends Fragment{
             public CharSequence convertToString(Cursor cur) {
                 int fNameIndex = cur.getColumnIndex("f_name");
                 int lNameIndex = cur.getColumnIndex("l_name");
-                return cur.getString(fNameIndex) + " " + cur.getString(lNameIndex);
+                String doctorName = cur.getString(fNameIndex) + " " + cur.getString(lNameIndex);
+                bill.setReferringDoctor(doctorName);
+                return doctorName;
             }
         });
     }
@@ -162,7 +187,9 @@ public class BillFragment extends Fragment{
         roomAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
             public CharSequence convertToString(Cursor cur) {
                 int roomIndex = cur.getColumnIndex("room_description");
-                return cur.getString(roomIndex);
+                String room = cur.getString(roomIndex);
+                bill.setRoom(room);
+                return room;
             }
         });
     }
@@ -186,7 +213,9 @@ public class BillFragment extends Fragment{
         siteAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
             public CharSequence convertToString(Cursor cur) {
                 int roomIndex = cur.getColumnIndex("place_description");
-                return cur.getString(roomIndex);
+                String site = cur.getString(roomIndex);
+                bill.setSite(site);
+                return site;
             }
         });
     }
@@ -200,7 +229,7 @@ public class BillFragment extends Fragment{
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(getActivity(), visitCodes, billActivity, visitCodeToICD10ID, billfragment));
+                gv.setAdapter(new GridAdapter(getActivity(), bill, billActivity, billfragment));
             }
         });
 
@@ -233,7 +262,7 @@ public class BillFragment extends Fragment{
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(getActivity(), visitCodes, billActivity, visitCodeToICD10ID, billfragment));
+                gv.setAdapter(new GridAdapter(getActivity(), bill, billActivity, billfragment));
             }
         });
         pcTextView.setThreshold(0);
@@ -264,7 +293,7 @@ public class BillFragment extends Fragment{
                 String visitCode = c.getString(c.getColumnIndex("apt_code"));
                 addVisitCodeToDataSource(visitCode);
                 gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
-                gv.setAdapter(new GridAdapter(getActivity(), visitCodes, billActivity, visitCodeToICD10ID, billfragment));
+                gv.setAdapter(new GridAdapter(getActivity(), bill, billActivity, billfragment));
             }
         });
         mcTextView.setThreshold(0);
@@ -290,11 +319,12 @@ public class BillFragment extends Fragment{
      * @param visitCode the visitcode to add
      */
     public void addVisitCodeToDataSource(String visitCode){
-        if(!visitCodes.contains(visitCode)){//only add the visitCode if it is not already in there
-            visitCodes.add(visitCode);
+
+        if(!bill.getVisitCodes().contains(visitCode)){//only add the visitCode if it is not already in there
+            bill.getVisitCodes().add(visitCode);
             //create a space for the visit code on the map
-            visitCodeToICD10ID.put(visitCode, new ArrayList<Integer>());
-            visitCodeToModifierID.put(visitCode, null);
+            bill.getVisitCodeToICD10ID().put(visitCode, new ArrayList<Integer>());
+            bill.getVisitCodeToModifierID().put(visitCode, null);
         }
     }
 
@@ -305,6 +335,7 @@ public class BillFragment extends Fragment{
         SimpleDateFormat sdf = new SimpleDateFormat("MM dd, yyyy");
         String dateString = sdf.format(date);
         dateTV.setText(dateString);
+//        bill.setDate(dateString);
 //        InputMethodManager imm = (InputMethodManager) billActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
 //        imm.hideSoftInputFromWindow(dateTV.getWindowToken(), 0);
     }
@@ -327,6 +358,12 @@ public class BillFragment extends Fragment{
 
     public void saveBill(){
 
+    }
+
+    public void setBill(Bill bill){
+//        Toast.makeText(billActivity, "Bill Set", Toast.LENGTH_SHORT).show();
+        System.out.println("Set BILL");
+        this.bill = bill;
     }
 
     @Override
