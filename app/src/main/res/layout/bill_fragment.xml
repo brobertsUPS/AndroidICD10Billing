@@ -42,6 +42,13 @@
 
             <AutoCompleteTextView
                 xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/autocomplete_admin_doctor"
+                android:hint="@string/admin_doctor_hint"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+
+            <AutoCompleteTextView
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/autocomplete_referring_doctor"
                 android:hint="@string/referring_doctor_hint"
                 android:layout_width="fill_parent"
@@ -81,12 +88,6 @@
                 android:hint="@string/mc_code_hint"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/customVisitCodeString"
-                android:id="@+id/customVisitCodeButton" />
 
             <GridView
                 android:layout_width="wrap_content"

@@ -18,6 +18,19 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    public int getLastInsertedID(){
+        int result = -1;
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM SQLITE_SEQUENCE", new String[0]);
+        c.moveToFirst();
+        db.close();
+
+        if(c != null && c.getCount() > 0){
+            result = c.getInt(0);
+        }
+        return result;
+    }
+
     public Cursor getRootLocations(){
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery("SELECT LID as _id, location_name FROM Condition_location cl WHERE NOT EXISTS (SELECT * FROM Sub_location sl WHERE cl.LID = sl.LID) ORDER BY LID", new String[0]);
@@ -98,12 +111,54 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         return c;
     }
 
+    public void insertSite(String site){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {site};
+        db.execSQL("INSERT INTO Place_of_service (placeID, place_description) VALUES (NULL, ?)", args);
+        db.close();
+    }
+
+    public int getSiteID(String site){
+        int result = -1;
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {site};
+        Cursor c = db.rawQuery("SELECT placeID FROM Place_of_service WHERE place_description=?", args);
+        c.moveToFirst();
+
+        if (c != null && c.getCount() > 0) {
+            result = c.getInt(0);
+        }
+        db.close();
+        return result;
+    }
+
     public Cursor searchRoom(String roomInput){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {"%" + roomInput + "%"}; //pass the search input to both parameters in the query
         Cursor c = db.rawQuery("SELECT roomID as _id, room_description FROM Room WHERE room_description LIKE ?", args);
         c.moveToFirst();
         return c;
+    }
+
+    public void insertRoom(String room){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {room};
+        db.execSQL("INSERT INTO Room (roomID, room_description) VALUES (NULL, ?)", args);
+        db.close();
+    }
+
+    public int getRoomID(String room){
+        int result = -1;
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {room};
+        Cursor c = db.rawQuery("SELECT roomID FROM Room WHERE room_description=?", args);
+        c.moveToFirst();
+
+        if (c != null && c.getCount() > 0) {
+            result = c.getInt(0);
+        }
+        db.close();
+        return result;
     }
 
     public Cursor searchVisitCodes(String cptInput, String apt_type){
@@ -153,6 +208,20 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         return c;
     }
 
+    public int getDoctorID(String fName, String lName){
+        int result = -1;
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {fName, lName};
+        Cursor c = db.rawQuery("SELECT dID FROM Doctor WHERE f_name=? AND l_name=?", args);
+        c.moveToFirst();
+
+        if (c != null && c.getCount() > 0) {
+            result = c.getInt(0);
+        }
+        db.close();
+        return result;
+    }
+
     public void deleteDoctor(int dID){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {dID + ""};
@@ -188,6 +257,21 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         return c;
     }
 
+    public int getPatientID(String fName, String lName){
+
+        int result = -1;
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {fName, lName};
+        Cursor c = db.rawQuery("Select pID FROM Patient WHERE f_name=? AND l_name=?", args);
+        c.moveToFirst();
+
+        if (c != null && c.getCount() > 0) {
+            result = c.getInt(0);
+        }
+        db.close();
+        return result;
+    }
+
     public void deletePatient(int pID){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {pID + ""};
@@ -201,4 +285,34 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         db.execSQL("UPDATE Patient SET date_of_birth=?, f_name=?, l_name=? WHERE pID=?", args);
         db.close();
     }
+
+    public void addHasDoc(int aptID, int dID){
+
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {aptID + "", dID + ""};
+        db.execSQL("INSERT INTO Has_doc (aptID, dID) VALUES (?, ?)", args);
+        db.close();
+    }
+
+    public int addAppointmentToDatabase(int pID, String date, int siteID, int roomID, int codeType, int billComplete){
+
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {pID +"", date, siteID + "", roomID + "", codeType + "", billComplete + ""};
+        db.execSQL("INSERT INTO Appointment (aptID, pID, date, placeID, roomID, code_type, complete) VALUES (NULL, ?, ?, ?, ?, ?, ?)", args);
+
+        Cursor c = db.rawQuery("SELECT last_insert_rowid()", new String[0]);
+        c.moveToFirst();
+
+        int aptID = -1;
+        if(c != null && c.getCount() > 0){
+            aptID = c.getInt(0);
+        }
+
+        System.out.println("APTID -------->" + aptID);
+        db.close();
+
+        return aptID;
+    }
 }
+
+

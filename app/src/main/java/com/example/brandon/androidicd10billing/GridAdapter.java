@@ -9,9 +9,11 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -25,11 +27,12 @@ public class GridAdapter extends BaseAdapter {
     private Context context;
     private FragmentActivity billActivity;
     private Bill bill;
-    public Fragment billFragment;
+    public BillFragment billFragment;
+    public RelativeLayout billLayout;
 
     public GridView icdGridview;
 
-    public GridAdapter(Context context, Bill bill, FragmentActivity billFragmentActivity, Fragment billFragment) {
+    public GridAdapter(Context context, Bill bill, FragmentActivity billFragmentActivity, BillFragment billFragment) {
         billActivity = billFragmentActivity;
         this.bill = bill;
         this.context = context;
@@ -70,6 +73,7 @@ public class GridAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 DrillDownCodeSearchFragment drillDownFragment = new DrillDownCodeSearchFragment();
+                billFragment.captureBillInformation(bill);
                 bill.setVisitCodeToAddTo(visitCodeToAddTo);
                 drillDownFragment.setBill(bill);
                 FragmentTransaction transaction = billActivity.getSupportFragmentManager().beginTransaction();
@@ -90,6 +94,8 @@ public class GridAdapter extends BaseAdapter {
 
         return rowView;
     }
+
+
 
     public class Holder
     {

@@ -15,11 +15,13 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,11 +30,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class BillFragment extends Fragment{
-    private Fragment billfragment = this;
+    private BillFragment billfragment = this;
 
     private BillSystemDatabase db;
     private GridView gv;
-    private RelativeLayout billLayout;
+    public RelativeLayout billLayout;
     private FragmentActivity billActivity;
 
     private Bill bill;
@@ -44,7 +46,7 @@ public class BillFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        billActivity  = (FragmentActivity) super.getActivity();
+        billActivity = (FragmentActivity) super.getActivity();
         billLayout = (RelativeLayout) inflater.inflate(R.layout.bill_fragment, container, false);
 
         db = new BillSystemDatabase(super.getActivity());
@@ -53,23 +55,164 @@ public class BillFragment extends Fragment{
         gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView); //changed to llLayout.findViewById
 
         //fill the bill information or create a new one
-        if(bill == null){
-//            Toast.makeText(billActivity, "New Bill", Toast.LENGTH_SHORT).show();
+        if (bill == null) {
             bill = new Bill();
-        }else{
-//            Toast.makeText(billActivity, "Old Bill", Toast.LENGTH_SHORT).show();
+        } else {
             loadBillFromDetailPage();
         }
 
-        gv.setAdapter(new GridAdapter(super.getActivity(), bill, billActivity,this));
+        gv.setAdapter(new GridAdapter(super.getActivity(), bill, billActivity, this));
+
+        setOnClickListeners();
 
         return billLayout;
+    }
+
+    public void saveBill(){
+
+        captureBillInformation(bill);//update the bill with whatever the user is trying to save
+
+        String[] names = bill.patientName.split(" ");
+        int pID = -1;
+        if(names.length > 1) {
+            pID = db.getPatientID(names[0], names[1]);   //get the patient ID
+
+            if(pID == -1){
+                db.insertPatient(names[0], names[1], bill.dob);//patient not found so save it
+                pID = db.getPatientID(names[0], names[1]);   //get the patient ID
+            }
+            System.out.println("PID IN BILL " + pID);
+        }else{
+            System.out.println("Not Correct name");
+        }
+
+        int siteID = db.getSiteID(bill.site);//get the site ID
+        if(siteID == -1){
+            db.insertSite(bill.site);
+            siteID = db.getSiteID(bill.site);
+        }
+        System.out.println("Site id " + siteID);
+
+        int roomID = db.getRoomID(bill.room);//get the room ID
+        if(roomID == -1){
+            db.insertRoom(bill.room);
+            roomID = db.getRoomID(bill.room);
+        }
+        System.out.println("Room ID " + roomID);
+
+        String[] docNames = bill.referringDoctor.split(" ");
+        int referringDocID = -1;
+        if(docNames.length > 1){
+            referringDocID = db.getDoctorID(docNames[0], docNames[1]);       //get referring doctor ID
+            if(referringDocID == -1){
+                db.insertDoctor(docNames[0], docNames[1], false);
+                referringDocID = db.getDoctorID(docNames[0], docNames[1]);
+            }
+            System.out.println(referringDocID);
+        }else{
+            //invalid doctor name
+        }
+
+        String[] adminDocNames = bill.adminDoctor.split(" ");
+        int adminDocID = -1;
+        if(docNames.length > 1){
+            adminDocID = db.getDoctorID(docNames[0], docNames[1]);       //get referring doctor ID
+            if(adminDocID == -1){
+                db.insertDoctor(docNames[0], docNames[1], false);
+                adminDocID = db.getDoctorID(docNames[0], docNames[1]);
+            }
+            System.out.println(adminDocID);
+        }else{
+            //invalid doctor name
+        }
+
+
+        saveNewBill(pID, adminDocID, referringDocID, siteID, roomID);
+
+    }
+
+    public void saveNewBill(int pID, int adminDocID, int referringDocID, int siteID, int roomID){
+
+        //Switch s = (Switch) findViewById(R.id.SwitchID);
+
+        Switch icd10On = (Switch) billLayout.findViewById(R.id.ICD10OnSwitch);
+        Switch billComplete = (Switch) billLayout.findViewById(R.id.billCompleteSwitch);
+
+        boolean icd10Checked = icd10On.isChecked();
+        boolean billCompleteChecked = billComplete.isChecked();
+        int icd10Check = (icd10Checked) ? 1 : 0;
+        int billCompleteCheck = (billCompleteChecked) ? 1: 0;
+
+        int aptID = db.addAppointmentToDatabase(pID, bill.date, siteID, roomID, icd10Check, billCompleteCheck);//save with a default codeType and billComplete for now
+
+        db.addHasDoc(aptID, adminDocID);//add hasDoc admin
+        db.addHasDoc(aptID, referringDocID);//add hasDoc referring
+
+        saveCodesForBill(aptID, adminDocID, referringDocID);//save codes for bill
+
+    }
+
+    public void saveCodesForBill(int aptID, int adminDoctorID,int referringDoctorID){
+
+        ArrayList<String> visitCodes = bill.getVisitCodes();
+
+        for(int i=0; i< visitCodes.size(); i++){
+            String visitCode = visitCodes.get(i);
+            ArrayList<Integer> diagnosesCodes = bill.getVisitCodeToICD10ID().get(visitCode);
+
+            for(int j =0; j<diagnosesCodes.size();j++){
+                //[(icd10:String, icd9:String, icd10id:Int, extensionCode:String)]
+                //add has type with the information above
+            }
+
+
+        }
+    }
+
+    public void setOnClickListeners(){
+        Button b = (Button)billLayout.findViewById(R.id.saveButton);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveBill();
+            }
+        });
+    }
+
+    public void captureBillInformation(Bill bill){
+
+        AutoCompleteTextView dateTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date); //Select the patient autocomplete textview
+        bill.setDate(dateTextView.getText().toString());
+
+        AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
+        bill.setPatientName(patientTextView.getText().toString());
+
+        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
+        bill.setDOB(patientDOBTextView.getText().toString());
+
+        AutoCompleteTextView adminDoctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_admin_doctor);
+        bill.setAdminDoctor(adminDoctorTextView.getText().toString());
+
+        AutoCompleteTextView doctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_referring_doctor);
+        bill.setReferringDoctor(doctorTextView.getText().toString());
+
+        AutoCompleteTextView roomTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_room);
+        bill.setRoom(roomTextView.getText().toString());
+
+        AutoCompleteTextView siteTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_site);
+        bill.setSite(siteTextView.getText().toString());
     }
 
     public void loadBillFromDetailPage(){
         //put the icd10 id with the visitCode
         AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
         patientTextView.setText(bill.patientName);
+
+        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
+        patientDOBTextView.setText(bill.dob);
+
+        AutoCompleteTextView adminDoctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_admin_doctor);
+        adminDoctorTextView.setText(bill.adminDoctor);
 
         AutoCompleteTextView doctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_referring_doctor);
         doctorTextView.setText(bill.referringDoctor);
@@ -106,6 +249,7 @@ public class BillFragment extends Fragment{
     public void addAutocompleteAdapters(){
         setDateForBill();
         addPatientCodeCompletionAdapter();
+        addAdminDoctorCodeCompletionAdapter();
         addDoctorCodeCompletionAdapter();
         addSiteCompletionAdapter();
         addRoomCompletionAdapter();
@@ -137,6 +281,33 @@ public class BillFragment extends Fragment{
                 String patientName = cur.getString(fNameIndex) + " " + cur.getString(lNameIndex);
                 bill.setPatientName(patientName);
                 return patientName;                    //return the CharSequence to put in the textview
+            }
+        });
+    }
+
+    public void addAdminDoctorCodeCompletionAdapter(){
+        AutoCompleteTextView doctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_admin_doctor);
+        doctorTextView.setThreshold(0);
+        SimpleCursorAdapter doctorAdapter;
+        doctorAdapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_2, null,
+                new String[] {"f_name", "l_name"}, //"code_description"
+                new int[] {android.R.id.text1, android.R.id.text2},
+                0);
+        doctorTextView.setAdapter(doctorAdapter);
+
+        doctorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+            public Cursor runQuery(CharSequence str) {
+                return db.searchDoctorsWithType(str + "", 0);
+            }
+        });
+
+        doctorAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
+            public CharSequence convertToString(Cursor cur) {
+                int fNameIndex = cur.getColumnIndex("f_name");
+                int lNameIndex = cur.getColumnIndex("l_name");
+                String doctorName = cur.getString(fNameIndex) + " " + cur.getString(lNameIndex);
+                bill.setReferringDoctor(doctorName);
+                return doctorName;
             }
         });
     }
@@ -353,10 +524,6 @@ public class BillFragment extends Fragment{
     }
 
     public void moveICDCodeDown(){
-
-    }
-
-    public void saveBill(){
 
     }
 
