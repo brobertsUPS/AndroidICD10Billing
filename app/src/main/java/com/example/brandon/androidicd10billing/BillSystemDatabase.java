@@ -132,6 +132,15 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         return result;
     }
 
+    public Cursor getSiteWithID(int siteID){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {siteID + ""};
+        System.out.println("siteID: " + siteID);
+        Cursor c = db.rawQuery("SELECT * FROM Place_of_service WHERE placeID=?", args);
+        c.moveToFirst();
+        return c;
+    }
+
     public Cursor searchRoom(String roomInput){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {"%" + roomInput + "%"}; //pass the search input to both parameters in the query
@@ -159,6 +168,15 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         }
         db.close();
         return result;
+    }
+
+    public Cursor getRoomWithID(int roomID){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {roomID + ""};
+        System.out.println("roomID: " + roomID);
+        Cursor c = db.rawQuery("SELECT * FROM Room WHERE roomID=?", args);
+        c.moveToFirst();
+        return c;
     }
 
     public Cursor searchVisitCodes(String cptInput, String apt_type){
@@ -313,6 +331,65 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
 
         return aptID;
     }
+
+    public void addHasType(int aptID, String visitCodeText, int icd10CodeID, int visitCodePriority, int icdPriority, String extensionCode){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {aptID +"", visitCodeText, icd10CodeID + "", visitCodePriority + "", icdPriority + "", extensionCode};
+        db.execSQL("INSERT INTO Has_type (aptID,apt_code, ICD10_ID, visit_priority, icd_priority, extension) VALUES (?,?,?,?,?,?)", args);
+        db.close();
+    }
+
+    public Cursor getDatesForBills(){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {};
+        Cursor c = db.rawQuery("SELECT aptID as _id, date FROM Appointment GROUP BY date", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor getBillsForDate(String date){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {date};
+        Cursor c = db.rawQuery("SELECT aptID as _id, pID,date_of_birth, f_name, l_name, placeID, roomID, code_type, complete, date FROM Patient NATURAL JOIN Appointment WHERE date=?", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public String getDateForAppointment(int aptID){
+        String date = "";
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {aptID + ""};
+        Cursor c = db.rawQuery("SELECT date FROM Appointment WHERE aptID=?", args);
+        c.moveToFirst();
+
+        if (c != null && c.getCount() > 0) {
+            date = c.getString(0);
+        }
+        db.close();
+        return date;
+    }
+
+    public Cursor getDoctorsForBill(int aptID){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {aptID + ""};
+        Cursor c = db.rawQuery("SELECT f_name, l_name, type FROM Appointment NATURAL JOIN Has_doc NATURAL JOIN Doctor WHERE aptID=?", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor getVisitCodesForBill(int aptID){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {aptID + ""};
+        Cursor c = db.rawQuery("SELECT apt_code, visit_priority FROM Appointment NATURAL JOIN Has_type NATURAL JOIN Apt_type WHERE aptID=? GROUP BY apt_code ORDER BY visit_priority", args);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor getDiagnosesForVisitCode(int aptID, String visitCode){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {aptID + "", visitCode};
+        Cursor c = db.rawQuery("SELECT ICD10_code, ICD9_code, ICD10_ID, extension FROM Has_type NATURAL JOIN Appointment NATURAL JOIN ICD10_Condition NATURAL JOIN Characterized_by WHERE aptID=? AND apt_code=? ORDER BY icd_priority", args);
+        c.moveToFirst();
+        return c;
+    }
 }
-
-

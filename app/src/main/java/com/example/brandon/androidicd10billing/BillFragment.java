@@ -116,7 +116,7 @@ public class BillFragment extends Fragment{
         String[] adminDocNames = bill.adminDoctor.split(" ");
         int adminDocID = -1;
         if(docNames.length > 1){
-            adminDocID = db.getDoctorID(docNames[0], docNames[1]);       //get referring doctor ID
+            adminDocID = db.getDoctorID(adminDocNames[0], adminDocNames[1]);       //get referring doctor ID
             if(adminDocID == -1){
                 db.insertDoctor(docNames[0], docNames[1], false);
                 adminDocID = db.getDoctorID(docNames[0], docNames[1]);
@@ -125,7 +125,7 @@ public class BillFragment extends Fragment{
         }else{
             //invalid doctor name
         }
-
+        System.out.println("AdminDocID " + adminDocID + " referringDocID " + referringDocID);
 
         saveNewBill(pID, adminDocID, referringDocID, siteID, roomID);
 
@@ -135,24 +135,24 @@ public class BillFragment extends Fragment{
 
         //Switch s = (Switch) findViewById(R.id.SwitchID);
 
-        Switch icd10On = (Switch) billLayout.findViewById(R.id.ICD10OnSwitch);
-        Switch billComplete = (Switch) billLayout.findViewById(R.id.billCompleteSwitch);
+//        Switch icd10On = (Switch) billLayout.findViewById(R.id.ICD10OnSwitch);
+//        Switch billComplete = (Switch) billLayout.findViewById(R.id.billCompleteSwitch);
 
-        boolean icd10Checked = icd10On.isChecked();
-        boolean billCompleteChecked = billComplete.isChecked();
-        int icd10Check = (icd10Checked) ? 1 : 0;
-        int billCompleteCheck = (billCompleteChecked) ? 1: 0;
+//        boolean icd10Checked = icd10On.isChecked();
+//        boolean billCompleteChecked = billComplete.isChecked();
+//        int icd10Check = (icd10Checked) ? 1 : 0;
+//        int billCompleteCheck = (billCompleteChecked) ? 1: 0;
 
-        int aptID = db.addAppointmentToDatabase(pID, bill.date, siteID, roomID, icd10Check, billCompleteCheck);//save with a default codeType and billComplete for now
-
+        int aptID = db.addAppointmentToDatabase(pID, bill.date, siteID, roomID, 0, 0);//save with a default codeType and billComplete for now
+        System.out.println("aptid " + aptID + " admin doc id " + adminDocID + " referringDocID " + referringDocID);
         db.addHasDoc(aptID, adminDocID);//add hasDoc admin
         db.addHasDoc(aptID, referringDocID);//add hasDoc referring
 
-        saveCodesForBill(aptID, adminDocID, referringDocID);//save codes for bill
+        saveCodesForBill(aptID);//save codes for bill
 
     }
 
-    public void saveCodesForBill(int aptID, int adminDoctorID,int referringDoctorID){
+    public void saveCodesForBill(int aptID){
 
         ArrayList<String> visitCodes = bill.getVisitCodes();
 
@@ -160,12 +160,10 @@ public class BillFragment extends Fragment{
             String visitCode = visitCodes.get(i);
             ArrayList<Integer> diagnosesCodes = bill.getVisitCodeToICD10ID().get(visitCode);
 
-            for(int j =0; j<diagnosesCodes.size();j++){
-                //[(icd10:String, icd9:String, icd10id:Int, extensionCode:String)]
-                //add has type with the information above
+            for(int j =0; j<diagnosesCodes.size();j++) {
+                System.out.println("aptID " + aptID + " visitCode " + visitCode + " diagnosesID " + diagnosesCodes.get(i) + " vistiCodePriority " + i + " diagnosesPriority " + j );
+                db.addHasType(aptID, visitCode, diagnosesCodes.get(j), i, j, "");
             }
-
-
         }
     }
 
@@ -179,6 +177,10 @@ public class BillFragment extends Fragment{
         });
     }
 
+    /**
+     * Saves all of the information in the bill form to the bill object for that form
+     * @param bill the bill to update the contents for
+     */
     public void captureBillInformation(Bill bill){
 
         AutoCompleteTextView dateTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date); //Select the patient autocomplete textview
@@ -226,18 +228,26 @@ public class BillFragment extends Fragment{
 
         //get the arguments that were passed to this fragment
         if(getArguments() != null) {
-            //icd10ID
-            int icd10IDToAdd = getArguments().getInt("icd10IDToAdd");
-            Toast.makeText(billActivity, "ICD10IDToADD " + icd10IDToAdd, Toast.LENGTH_SHORT).show();        //check if we received anything from the detail page
-            //set the bill if there was one
 
-            HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = bill.getVisitCodeToICD10ID();
-            System.out.println("VISITCODETOADDTO " + bill.visitCodeToAddTo);
-            ArrayList<Integer> ICD10IDs = visitCodeToICD10ID.get(bill.visitCodeToAddTo);
-            ICD10IDs.add(icd10IDToAdd);
+            //coming from a saved bill
+            if(getArguments().getBoolean("savedBill")){
+                gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(getActivity(), bill, billActivity, billfragment)); //get the visit codes from the database for the bill
+            }else {
+                //coming from the detail page, so insert the icd10ToAdd
+                //icd10ID
+                int icd10IDToAdd = getArguments().getInt("icd10IDToAdd");
+                Toast.makeText(billActivity, "ICD10IDToADD " + icd10IDToAdd, Toast.LENGTH_SHORT).show();        //check if we received anything from the detail page
+                //set the bill if there was one
 
-            gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
-            gv.setAdapter(new GridAdapter(getActivity(), bill, billActivity, billfragment));
+                HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = bill.getVisitCodeToICD10ID();
+                System.out.println("VISITCODETOADDTO " + bill.visitCodeToAddTo);
+                ArrayList<Integer> ICD10IDs = visitCodeToICD10ID.get(bill.visitCodeToAddTo);
+                ICD10IDs.add(icd10IDToAdd);
+
+                gv = (GridView) billLayout.findViewById(R.id.visitCodeGridView);
+                gv.setAdapter(new GridAdapter(getActivity(), bill, billActivity, billfragment));
+            }
         }
         //clear our the visitCodeToAddTo field in the bill
         bill.visitCodeToAddTo = null;
@@ -306,7 +316,7 @@ public class BillFragment extends Fragment{
                 int fNameIndex = cur.getColumnIndex("f_name");
                 int lNameIndex = cur.getColumnIndex("l_name");
                 String doctorName = cur.getString(fNameIndex) + " " + cur.getString(lNameIndex);
-                bill.setReferringDoctor(doctorName);
+                bill.setAdminDoctor(doctorName);
                 return doctorName;
             }
         });
@@ -528,7 +538,6 @@ public class BillFragment extends Fragment{
     }
 
     public void setBill(Bill bill){
-//        Toast.makeText(billActivity, "Bill Set", Toast.LENGTH_SHORT).show();
         System.out.println("Set BILL");
         this.bill = bill;
     }

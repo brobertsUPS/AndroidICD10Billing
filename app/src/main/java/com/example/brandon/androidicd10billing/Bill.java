@@ -76,9 +76,19 @@ public class Bill {
         return visitCodes;
     }
 
+    public void setVisitCodes(ArrayList<String> newVisitCodes){
+        visitCodes = newVisitCodes;
+    }
+
     public HashMap<String, ArrayList<Integer>> getVisitCodeToICD10ID(){
         return visitCodeToICD10ID;
     }
+
+    public void setVisitCodeToICD10ID(HashMap<String, ArrayList<Integer>> newVisitCodeToIC10ID){
+        visitCodeToICD10ID = newVisitCodeToIC10ID;
+    }
+
+
 
     public HashMap<String, Integer> getVisitCodeToModifierID(){
         return visitCodeToModifierID;

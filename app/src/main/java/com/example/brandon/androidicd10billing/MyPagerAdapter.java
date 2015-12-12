@@ -23,14 +23,17 @@ public class MyPagerAdapter extends FragmentStatePagerAdapter {
                 BillFragment tab1 = new BillFragment();
                 return tab1;
             case 1:
-                DrillDownCodeSearchFragment tab2 = new DrillDownCodeSearchFragment();
+                BillDatesFragment tab2 = new BillDatesFragment();
                 return tab2;
             case 2:
-                PatientListFragment tab3 = new PatientListFragment();
+                DrillDownCodeSearchFragment tab3 = new DrillDownCodeSearchFragment();
                 return tab3;
             case 3:
-                DoctorListFragment tab4 = new DoctorListFragment();
+                PatientListFragment tab4 = new PatientListFragment();
                 return tab4;
+            case 4:
+                DoctorListFragment tab5 = new DoctorListFragment();
+                return tab5;
             default:
                 return null;
         }

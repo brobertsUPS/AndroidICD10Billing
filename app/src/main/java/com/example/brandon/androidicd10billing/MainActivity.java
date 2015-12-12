@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Bill"));
+        tabLayout.addTab(tabLayout.newTab().setText("All Bills"));
         tabLayout.addTab(tabLayout.newTab().setText("Search"));
         tabLayout.addTab(tabLayout.newTab().setText("Patient"));
         tabLayout.addTab(tabLayout.newTab().setText("Doctor"));
