@@ -104,7 +104,7 @@ public class BillsForDateFragment extends Fragment {
                 String html = getHtmlTable(bills);
 
                 try {
-                    String fileName = "testFileName.html";
+                    String fileName = "Bills.html";
                     File root = new File(Environment.getExternalStorageDirectory(), "testDir");
                     if (!root.exists()) {
                         root.mkdirs();
@@ -114,18 +114,11 @@ public class BillsForDateFragment extends Fragment {
                     writer.append(html);
                     writer.flush();
                     writer.close();
-                    System.out.println("SEND");
                     sendEmail(gpxfile);
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-//                Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-//                sharingIntent.setType("text/html");
-//                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Bill");
-//                sharingIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(html));
-//                startActivity(Intent.createChooser(sharingIntent,"Email:"));
             }
         });
     }
@@ -135,8 +128,8 @@ public class BillsForDateFragment extends Fragment {
 
         Intent i = new Intent(Intent.ACTION_SEND);
         i.setType("message/rfc822");
-        i.putExtra(Intent.EXTRA_SUBJECT, "Test subject");
-        i.putExtra(Intent.EXTRA_TEXT, "This is the body of the email");
+        i.putExtra(Intent.EXTRA_SUBJECT, "Bills");
+        i.putExtra(Intent.EXTRA_TEXT, "The bills for the submitted date are attached.");
         i.putExtra(Intent.EXTRA_STREAM, path); // Include the path
         try {
             startActivity(Intent.createChooser(i, "Send mail..."));
@@ -162,8 +155,8 @@ public class BillsForDateFragment extends Fragment {
             String firstVisitCode = bill.getVisitCodes().get(0);
             ArrayList<Integer> icd10IDsForFirstVisitCode = bill.getVisitCodeToICD10ID().get(firstVisitCode);
             String firstICD10Code = db.getICD10WithID(icd10IDsForFirstVisitCode.get(0));
-
-            htmlLine = htmlLine + "<tr><td> " + bill.adminDoctor + "</td><td> " + bill.date + "</td><td> " + bill.patientName + " </td><td>" + bill.dob + "  </td><td> " + bill.adminDoctor + " </td><td> " + bill.site + " </td><td> " + bill.room + " </td><td> " + firstVisitCode + "</td><td> " + firstICD10Code + " </td><td>  </td> </tr>";
+            String firstICD9Code = db.getICD9WithICD10ID(icd10IDsForFirstVisitCode.get(0));
+            htmlLine = htmlLine + "<tr><td> " + bill.adminDoctor + "</td><td> " + bill.date + "</td><td> " + bill.patientName + " </td><td>" + bill.dob + "  </td><td> " + bill.adminDoctor + " </td><td> " + bill.site + " </td><td> " + bill.room + " </td><td> " + firstVisitCode + "</td><td> " + firstICD10Code + " </td><td> " + firstICD9Code +"  </td> </tr>";
 
             for (int i = 1; i < icd10IDsForFirstVisitCode.size(); i++) {
 
@@ -175,7 +168,7 @@ public class BillsForDateFragment extends Fragment {
                 ArrayList<Integer> icd10IDsForVisitCode = bill.getVisitCodeToICD10ID().get(visitCode);
 
                 for (int j = 0; j < icd10IDsForVisitCode.size(); j++) {
-                    htmlLine = htmlLine + "<tr> <td>  </td><td>  </td><td>  </td><td> </td><td> </td><td> </td><td> </td><td>" + visitCode + " </td><td> " + db.getICD10WithID(icd10IDsForVisitCode.get(j)) + " </td><td>  </td> </tr>";
+                    htmlLine = htmlLine + "<tr> <td>  </td><td>  </td><td>  </td><td> </td><td> </td><td> </td><td> </td><td>" + visitCode + " </td><td> " + db.getICD10WithID(icd10IDsForVisitCode.get(j)) + " </td><td>" + db.getICD9WithICD10ID(icd10IDsForVisitCode.get(j))+"  </td> </tr>";
                     visitCode = "";
                 }
             }
@@ -239,7 +232,7 @@ public class BillsForDateFragment extends Fragment {
         if(doctors.moveToNext()){
             String adminFName = doctors.getString(doctors.getColumnIndex("f_name"));
             String adminLName = doctors.getString(doctors.getColumnIndex("l_name"));
-            Toast.makeText(billsForDateActivity, "doctor " + (adminFName + " " + adminLName), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(billsForDateActivity, "doctor " + (adminFName + " " + adminLName), Toast.LENGTH_SHORT).show();
             bill.setAdminDoctor(adminFName + " " + adminLName);
         }
 

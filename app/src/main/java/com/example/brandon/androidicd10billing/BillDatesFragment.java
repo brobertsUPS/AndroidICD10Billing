@@ -18,6 +18,8 @@ import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 /**
  * Created by Brandon on 10/27/2015.
  */
@@ -42,6 +44,9 @@ public class BillDatesFragment extends Fragment {
         billDatesLayout = (RelativeLayout) inflater.inflate(R.layout.bill_dates_fragment, container, false);
 
         lv = (ListView) billDatesLayout.findViewById(R.id.billDatesList);
+        Button deleteAllBills = (Button) billDatesLayout.findViewById(R.id.deleteAllBills);
+        addDeleteAllBillsListener(deleteAllBills);
+
         db = new BillSystemDatabase(super.getActivity());
 
         datesCursor = db.getDatesForBills();
@@ -86,6 +91,37 @@ public class BillDatesFragment extends Fragment {
                 transaction.commit();
             }
         });
+    }
+
+    public void addDeleteAllBillsListener(Button deleteAllBillsButton){
+        deleteAllBillsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteAllBillsDialog();
+            }
+        });
+    }
+
+    public void deleteAllBillsDialog(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Delete All Bills?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        db.deleteAllBills();
+                        lv.deferNotifyDataSetChanged();
+                        datesCursor = db.getDatesForBills();
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 //
     private void updateList(){

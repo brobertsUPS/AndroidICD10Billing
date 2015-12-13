@@ -406,4 +406,25 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         db.close();
         return icd10;
     }
+
+    public String getICD9WithICD10ID(int ICD10ID){
+        String icd9 = "";
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {ICD10ID + ""};
+        Cursor c = db.rawQuery("Select ICD9_code FROM Characterized_by WHERE ICD10_ID=?", args);
+        c.moveToFirst();
+
+        if (c != null && c.getCount() > 0) {
+            icd9 = c.getString(0);
+        }
+        db.close();
+        return icd9;
+    }
+
+    public void deleteAllBills(){
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {};
+        db.execSQL("DELETE FROM Appointment", args);
+        db.close();
+    }
 }

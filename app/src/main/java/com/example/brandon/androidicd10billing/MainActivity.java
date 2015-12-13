@@ -26,9 +26,9 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Bill"));
         tabLayout.addTab(tabLayout.newTab().setText("All Bills"));
-        tabLayout.addTab(tabLayout.newTab().setText("Search"));
-        tabLayout.addTab(tabLayout.newTab().setText("Patient"));
-        tabLayout.addTab(tabLayout.newTab().setText("Doctor"));
+        tabLayout.addTab(tabLayout.newTab().setText("Codes"));
+        tabLayout.addTab(tabLayout.newTab().setText("PT"));
+        tabLayout.addTab(tabLayout.newTab().setText("DOC"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
@@ -89,9 +89,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }

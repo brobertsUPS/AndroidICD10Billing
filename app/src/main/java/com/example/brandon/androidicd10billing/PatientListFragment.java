@@ -44,7 +44,7 @@ public class PatientListFragment extends Fragment {
         lv = (ListView) patientLayout.findViewById(R.id.patientList);
         db = new BillSystemDatabase(super.getActivity());
 
-        Toast.makeText(getContext(), " Arguments null ", Toast.LENGTH_LONG);
+//        Toast.makeText(getContext(), " Arguments null ", Toast.LENGTH_LONG);
         patientsCursor = db.getPatients();
         adapter = new SimpleCursorAdapter(super.getActivity(), android.R.layout.simple_list_item_1, patientsCursor, new String[]{"f_name"}, new int[]{android.R.id.text1}, 0);
 

@@ -150,6 +150,13 @@ public class BillFragment extends Fragment{
 
         saveCodesForBill(aptID);//save codes for bill
 
+        Fragment newFragment = new BillFragment(); //make the new fragment that can be a detail page or a new drill down page
+        Bundle bundle = new Bundle();
+        FragmentTransaction transaction = billActivity.getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.bill_fragment_layout, newFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+
     }
 
     public void saveCodesForBill(int aptID){
@@ -237,7 +244,7 @@ public class BillFragment extends Fragment{
                 //coming from the detail page, so insert the icd10ToAdd
                 //icd10ID
                 int icd10IDToAdd = getArguments().getInt("icd10IDToAdd");
-                Toast.makeText(billActivity, "ICD10IDToADD " + icd10IDToAdd, Toast.LENGTH_SHORT).show();        //check if we received anything from the detail page
+//                Toast.makeText(billActivity, "ICD10IDToADD " + icd10IDToAdd, Toast.LENGTH_SHORT).show();        //check if we received anything from the detail page
                 //set the bill if there was one
 
                 HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = bill.getVisitCodeToICD10ID();
@@ -519,22 +526,6 @@ public class BillFragment extends Fragment{
 //        bill.setDate(dateString);
 //        InputMethodManager imm = (InputMethodManager) billActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
 //        imm.hideSoftInputFromWindow(dateTV.getWindowToken(), 0);
-    }
-
-    public void moveVisitCodeUp(){
-
-    }
-
-    public void moveVisitCodeDown(){
-
-    }
-
-    public void moveICDCodeUp(){
-
-    }
-
-    public void moveICDCodeDown(){
-
     }
 
     public void setBill(Bill bill){
