@@ -158,7 +158,7 @@ public class DrillDownCodeSearchFragment extends Fragment {
                         if (icd10IDCursor != null && icd10IDCursor.moveToFirst()) {
                             int icd10ID = icd10IDCursor.getInt(icd10IDCursor.getColumnIndex("ICD10_ID"));
                             bundle.putInt("icd10ID", icd10ID);
-                            System.out.println("ICD10ID " + icd10ID);
+//                            System.out.println("ICD10ID " + icd10ID);
                         }
                         bundle.putInt("lID", LID);//get the LID and pass it to the next page (could be drill down or detail page.
                         newFragment.setArguments(bundle);

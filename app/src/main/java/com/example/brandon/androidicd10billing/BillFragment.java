@@ -81,7 +81,7 @@ public class BillFragment extends Fragment{
                 db.insertPatient(names[0], names[1], bill.dob);//patient not found so save it
                 pID = db.getPatientID(names[0], names[1]);   //get the patient ID
             }
-            System.out.println("PID IN BILL " + pID);
+//            System.out.println("PID IN BILL " + pID);
         }else{
             System.out.println("Not Correct name");
         }
@@ -91,14 +91,14 @@ public class BillFragment extends Fragment{
             db.insertSite(bill.site);
             siteID = db.getSiteID(bill.site);
         }
-        System.out.println("Site id " + siteID);
+//        System.out.println("Site id " + siteID);
 
         int roomID = db.getRoomID(bill.room);//get the room ID
         if(roomID == -1){
             db.insertRoom(bill.room);
             roomID = db.getRoomID(bill.room);
         }
-        System.out.println("Room ID " + roomID);
+//        System.out.println("Room ID " + roomID);
 
         String[] docNames = bill.referringDoctor.split(" ");
         int referringDocID = -1;
@@ -108,7 +108,7 @@ public class BillFragment extends Fragment{
                 db.insertDoctor(docNames[0], docNames[1], false);
                 referringDocID = db.getDoctorID(docNames[0], docNames[1]);
             }
-            System.out.println(referringDocID);
+//            System.out.println(referringDocID);
         }else{
             //invalid doctor name
         }
@@ -121,11 +121,11 @@ public class BillFragment extends Fragment{
                 db.insertDoctor(docNames[0], docNames[1], false);
                 adminDocID = db.getDoctorID(docNames[0], docNames[1]);
             }
-            System.out.println(adminDocID);
+//            System.out.println(adminDocID);
         }else{
             //invalid doctor name
         }
-        System.out.println("AdminDocID " + adminDocID + " referringDocID " + referringDocID);
+//        System.out.println("AdminDocID " + adminDocID + " referringDocID " + referringDocID);
 
         saveNewBill(pID, adminDocID, referringDocID, siteID, roomID);
 
@@ -144,7 +144,7 @@ public class BillFragment extends Fragment{
 //        int billCompleteCheck = (billCompleteChecked) ? 1: 0;
 
         int aptID = db.addAppointmentToDatabase(pID, bill.date, siteID, roomID, 0, 0);//save with a default codeType and billComplete for now
-        System.out.println("aptid " + aptID + " admin doc id " + adminDocID + " referringDocID " + referringDocID);
+//        System.out.println("aptid " + aptID + " admin doc id " + adminDocID + " referringDocID " + referringDocID);
         db.addHasDoc(aptID, adminDocID);//add hasDoc admin
         db.addHasDoc(aptID, referringDocID);//add hasDoc referring
 
@@ -168,7 +168,7 @@ public class BillFragment extends Fragment{
             ArrayList<Integer> diagnosesCodes = bill.getVisitCodeToICD10ID().get(visitCode);
 
             for(int j =0; j<diagnosesCodes.size();j++) {
-                System.out.println("aptID " + aptID + " visitCode " + visitCode + " diagnosesID " + diagnosesCodes.get(i) + " vistiCodePriority " + i + " diagnosesPriority " + j );
+//                System.out.println("aptID " + aptID + " visitCode " + visitCode + " diagnosesID " + diagnosesCodes.get(i) + " vistiCodePriority " + i + " diagnosesPriority " + j );
                 db.addHasType(aptID, visitCode, diagnosesCodes.get(j), i, j, "");
             }
         }
@@ -196,8 +196,8 @@ public class BillFragment extends Fragment{
         AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
         bill.setPatientName(patientTextView.getText().toString());
 
-        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
-        bill.setDOB(patientDOBTextView.getText().toString());
+//        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
+//        bill.setDOB(patientDOBTextView.getText().toString());
 
         AutoCompleteTextView adminDoctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_admin_doctor);
         bill.setAdminDoctor(adminDoctorTextView.getText().toString());
@@ -217,8 +217,8 @@ public class BillFragment extends Fragment{
         AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
         patientTextView.setText(bill.patientName);
 
-        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
-        patientDOBTextView.setText(bill.dob);
+//        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
+//        patientDOBTextView.setText(bill.dob);
 
         AutoCompleteTextView adminDoctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_admin_doctor);
         adminDoctorTextView.setText(bill.adminDoctor);
@@ -248,7 +248,7 @@ public class BillFragment extends Fragment{
                 //set the bill if there was one
 
                 HashMap<String, ArrayList<Integer>> visitCodeToICD10ID = bill.getVisitCodeToICD10ID();
-                System.out.println("VISITCODETOADDTO " + bill.visitCodeToAddTo);
+//                System.out.println("VISITCODETOADDTO " + bill.visitCodeToAddTo);
                 ArrayList<Integer> ICD10IDs = visitCodeToICD10ID.get(bill.visitCodeToAddTo);
                 ICD10IDs.add(icd10IDToAdd);
 
@@ -529,7 +529,7 @@ public class BillFragment extends Fragment{
     }
 
     public void setBill(Bill bill){
-        System.out.println("Set BILL");
+//        System.out.println("Set BILL");
         this.bill = bill;
     }
 

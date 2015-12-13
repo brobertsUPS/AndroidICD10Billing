@@ -74,11 +74,11 @@ public class BillDatesFragment extends Fragment {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                System.out.println("Position " + position);
+//                System.out.println("Position " + position);
                 int aptID = (int) parent.getAdapter().getItemId(position);
                 //get aptID
                 String date = db.getDateForAppointment(aptID);
-                System.out.println("aptID " + aptID + " date  " + date);
+//                System.out.println("aptID " + aptID + " date  " + date);
 
 
                 Fragment newFragment = new BillsForDateFragment(); //make the new fragment that can be a detail page or a new drill down page

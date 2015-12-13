@@ -135,7 +135,7 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
     public Cursor getSiteWithID(int siteID){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {siteID + ""};
-        System.out.println("siteID: " + siteID);
+//        System.out.println("siteID: " + siteID);
         Cursor c = db.rawQuery("SELECT * FROM Place_of_service WHERE placeID=?", args);
         c.moveToFirst();
         return c;
@@ -173,7 +173,7 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
     public Cursor getRoomWithID(int roomID){
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {roomID + ""};
-        System.out.println("roomID: " + roomID);
+//        System.out.println("roomID: " + roomID);
         Cursor c = db.rawQuery("SELECT * FROM Room WHERE roomID=?", args);
         c.moveToFirst();
         return c;
@@ -220,7 +220,7 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
     public Cursor getDoctorWithDID(int dID) {
         SQLiteDatabase db = getReadableDatabase();
         String[] args = {dID + ""};
-        System.out.println("DID: " + dID);
+//        System.out.println("DID: " + dID);
         Cursor c = db.rawQuery("SELECT * FROM Doctor WHERE dID=?", args);
         c.moveToFirst();
         return c;
@@ -326,7 +326,7 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
             aptID = c.getInt(0);
         }
 
-        System.out.println("APTID -------->" + aptID);
+//        System.out.println("APTID -------->" + aptID);
         db.close();
 
         return aptID;

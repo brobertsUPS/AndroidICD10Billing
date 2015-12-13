@@ -40,7 +40,7 @@ public class ICDGridAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        System.out.println("ICD10IDS size " + icd10IDs.size());
+//        System.out.println("ICD10IDS size " + icd10IDs.size());
         return icd10IDs.size();
     }
 
@@ -58,13 +58,13 @@ public class ICDGridAdapter extends BaseAdapter {
         View rowView;
         LayoutInflater inflater = ( LayoutInflater )context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         rowView = inflater.inflate(R.layout.icd10_grid_row, null);
-        System.out.println(rowView);
+//        System.out.println(rowView);
 
         holder.tv = (TextView)rowView.findViewById(R.id.textView);
         holder.deleteICD10CodeButton = (Button) rowView.findViewById(R.id.deleteICD10CodeButton);
         holder.ICD10UpButton = (Button) rowView.findViewById(R.id.icd10UpButton);
         holder.ICD10DownButton = (Button) rowView.findViewById(R.id.icdDownButton);
-        System.out.println(icd10IDs);
+//        System.out.println(icd10IDs);
         String icd10IDString = ""  + icd10IDs.get(position);
         //get the string from the icd10id to put in the grid adapter
 

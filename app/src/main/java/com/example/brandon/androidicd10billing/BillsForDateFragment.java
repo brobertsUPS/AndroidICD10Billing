@@ -63,7 +63,7 @@ public class BillsForDateFragment extends Fragment {
         db = new BillSystemDatabase(super.getActivity());
 
         if(getArguments() != null) {
-            System.out.println("Bills retrieved");
+//            System.out.println("Bills retrieved");
             String date = getArguments().getString("dateForBill");
             billsCursor = db.getBillsForDate(date);   //get out the passed date
         }
@@ -160,7 +160,7 @@ public class BillsForDateFragment extends Fragment {
 
             for (int i = 1; i < icd10IDsForFirstVisitCode.size(); i++) {
 
-                htmlLine = htmlLine + "<tr> <td>  </td><td>  </td><td>  </td><td> </td><td> </td><td> </td><td> </td><td>  </td><td>  " + db.getICD10WithID(icd10IDsForFirstVisitCode.get(i)) + " </td><td>  </td> </tr>";
+                htmlLine = htmlLine + "<tr> <td>  </td><td>  </td><td>  </td><td> </td><td> </td><td> </td><td> </td><td>  </td><td>  " + db.getICD10WithID(icd10IDsForFirstVisitCode.get(i)) + " </td><td> " + db.getICD9WithICD10ID(icd10IDsForFirstVisitCode.get(i))+ "  </td> </tr>";
             }
 
             for (int i = 1; i < bill.getVisitCodes().size(); i++) {

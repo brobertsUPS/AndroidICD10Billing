@@ -90,7 +90,7 @@ public class GridAdapter extends BaseAdapter {
         });
 
         //Get the icd10ids that correspond to the visitcode
-        System.out.println(bill.getVisitCodes().get(position));
+//        System.out.println(bill.getVisitCodes().get(position));
         ArrayList<Integer> icdCodesForVisitCode = bill.getVisitCodeToICD10ID().get(bill.getVisitCodes().get(position));
 
         //set the adapter for this specified row
