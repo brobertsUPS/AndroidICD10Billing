@@ -1,12 +1,16 @@
 package com.example.brandon.androidicd10billing;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +22,14 @@ import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -32,6 +44,7 @@ public class BillsForDateFragment extends Fragment {
     public BillSystemDatabase db;
     ListAdapter adapter;
     Cursor billsCursor;
+    Button submitBillsButton;
 
     public BillsForDateFragment(){
 
@@ -45,6 +58,7 @@ public class BillsForDateFragment extends Fragment {
         billsForDateLayout = (RelativeLayout) inflater.inflate(R.layout.bills_for_date_fragment, container, false);
 
         lv = (ListView) billsForDateLayout.findViewById(R.id.billsForDateList);
+        submitBillsButton  = (Button)billsForDateLayout.findViewById(R.id.submit_bills_button);
 
         db = new BillSystemDatabase(super.getActivity());
 
@@ -59,6 +73,7 @@ public class BillsForDateFragment extends Fragment {
 
         lv.setAdapter(adapter);
         this.addListViewOnClick();
+        this.addSubmitBillsOnClickListener();
         updateList();
 
         return billsForDateLayout;
@@ -68,6 +83,104 @@ public class BillsForDateFragment extends Fragment {
     public void onResume(){
         super.onResume();
         updateList();
+    }
+
+    public void addSubmitBillsOnClickListener(){
+        submitBillsButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Get all the bills for the date
+                ArrayList<Bill> bills = new ArrayList<Bill>();
+                int position = 0;
+                do {
+                    //get the bill out of the cursor
+                    Cursor currentBillInfo = (Cursor) lv.getAdapter().getItem(position);
+                    int aptID = (int) lv.getAdapter().getItemId(position);
+                    bills.add(fillInBill(currentBillInfo, aptID));
+                    position++;
+                } while (billsCursor.moveToNext());
+
+                //create the file with all of the bill information in an html table
+
+                String html = getHtmlTable(bills);
+
+                try {
+                    String fileName = "testFileName.html";
+                    File root = new File(Environment.getExternalStorageDirectory(), "testDir");
+                    if (!root.exists()) {
+                        root.mkdirs();
+                    }
+                    File gpxfile = new File(root, fileName);
+                    FileWriter writer = new FileWriter(gpxfile);
+                    writer.append(html);
+                    writer.flush();
+                    writer.close();
+                    System.out.println("SEND");
+                    sendEmail(gpxfile);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+//                Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+//                sharingIntent.setType("text/html");
+//                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Bill");
+//                sharingIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(html));
+//                startActivity(Intent.createChooser(sharingIntent,"Email:"));
+            }
+        });
+    }
+
+    protected void sendEmail(File file){
+        Uri path = Uri.fromFile(file); // This guy gets the job done!
+
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("message/rfc822");
+        i.putExtra(Intent.EXTRA_SUBJECT, "Test subject");
+        i.putExtra(Intent.EXTRA_TEXT, "This is the body of the email");
+        i.putExtra(Intent.EXTRA_STREAM, path); // Include the path
+        try {
+            startActivity(Intent.createChooser(i, "Send mail..."));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(billsForDateActivity, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public String getHtmlTable(ArrayList<Bill> bills){
+
+        String html = "<!DOCTYPE html> <html> <head> <meta charset='UTF-8'> <title>Bills</title> </head> <body> <table border='1' style='width:100%; '> <tr><td> Admin Doc </td><td> Date </td><td> Patient Name </td><td> Patient Date of Birth </td><td> Referring Doctor </td><td> Place of Service </td><td> Room </td><td> Visit Code </td><td> ICD10 </td><td> ICD9 </td> </tr>";
+        for(int i=0; i< bills.size(); i++){
+            html = html + makeHTMLLine(bills.get(i));
+        }
+        html = html + "</table></body> </html>";
+        return html;
+    }
+
+    public String makeHTMLLine(Bill bill){
+        String htmlLine = "";
+
+        if(bill.getVisitCodes() != null && bill.getVisitCodes().size() > 0) {
+            String firstVisitCode = bill.getVisitCodes().get(0);
+            ArrayList<Integer> icd10IDsForFirstVisitCode = bill.getVisitCodeToICD10ID().get(firstVisitCode);
+            String firstICD10Code = db.getICD10WithID(icd10IDsForFirstVisitCode.get(0));
+
+            htmlLine = htmlLine + "<tr><td> " + bill.adminDoctor + "</td><td> " + bill.date + "</td><td> " + bill.patientName + " </td><td>" + bill.dob + "  </td><td> " + bill.adminDoctor + " </td><td> " + bill.site + " </td><td> " + bill.room + " </td><td> " + firstVisitCode + "</td><td> " + firstICD10Code + " </td><td>  </td> </tr>";
+
+            for (int i = 1; i < icd10IDsForFirstVisitCode.size(); i++) {
+
+                htmlLine = htmlLine + "<tr> <td>  </td><td>  </td><td>  </td><td> </td><td> </td><td> </td><td> </td><td>  </td><td>  " + db.getICD10WithID(icd10IDsForFirstVisitCode.get(i)) + " </td><td>  </td> </tr>";
+            }
+
+            for (int i = 1; i < bill.getVisitCodes().size(); i++) {
+                String visitCode = bill.getVisitCodes().get(i);
+                ArrayList<Integer> icd10IDsForVisitCode = bill.getVisitCodeToICD10ID().get(visitCode);
+
+                for (int j = 0; j < icd10IDsForVisitCode.size(); j++) {
+                    htmlLine = htmlLine + "<tr> <td>  </td><td>  </td><td>  </td><td> </td><td> </td><td> </td><td> </td><td>" + visitCode + " </td><td> " + db.getICD10WithID(icd10IDsForVisitCode.get(j)) + " </td><td>  </td> </tr>";
+                    visitCode = "";
+                }
+            }
+        }
+        return htmlLine;
     }
 
     /**
@@ -83,7 +196,7 @@ public class BillsForDateFragment extends Fragment {
                 int aptID = (int) parent.getAdapter().getItemId(position);
 
                 BillFragment newFragment = new BillFragment(); //make the new fragment that can be a detail page or a new drill down page
-                newFragment.setBill(fillInBill(position, billInformation, aptID));
+                newFragment.setBill(fillInBill(billInformation, aptID));
                 Bundle bundle = new Bundle();
                 bundle.putBoolean("savedBill", true);
                 newFragment.setArguments(bundle);
@@ -95,7 +208,7 @@ public class BillsForDateFragment extends Fragment {
         });
     }
 
-    public Bill fillInBill(int cursorPosition, Cursor billInformation, int aptID){
+    public Bill fillInBill(Cursor billInformation, int aptID){
 
         //fill in all of the details of the bill
         Bill bill = new Bill();
@@ -133,9 +246,11 @@ public class BillsForDateFragment extends Fragment {
         //get the visit codes
         Cursor visitCodesCursor = db.getVisitCodesForBill(aptID);
         ArrayList<String> visitCodes = new ArrayList<String>();
-        do{
-            visitCodes.add(visitCodesCursor.getString(visitCodesCursor.getColumnIndex("apt_code")));
-        }while(visitCodesCursor.moveToNext());
+        if(visitCodesCursor.moveToFirst()) {
+            do {
+                visitCodes.add(visitCodesCursor.getString(visitCodesCursor.getColumnIndex("apt_code")));
+            } while (visitCodesCursor.moveToNext());
+        }
 
         bill.setVisitCodes(visitCodes);
 
@@ -145,10 +260,11 @@ public class BillsForDateFragment extends Fragment {
 
             Cursor icd10ForVisitCode = db.getDiagnosesForVisitCode(aptID, visitCodes.get(i));
             ArrayList<Integer> icd10IDs = new ArrayList<Integer>();
-            do{
-                icd10IDs.add(icd10ForVisitCode.getInt(icd10ForVisitCode.getColumnIndex("ICD10_ID")));
-            }while(icd10ForVisitCode.moveToNext());
-            
+            if(icd10ForVisitCode.moveToFirst()) {
+                do {
+                    icd10IDs.add(icd10ForVisitCode.getInt(icd10ForVisitCode.getColumnIndex("ICD10_ID")));
+                } while (icd10ForVisitCode.moveToNext());
+            }
             visitCodeToICD10ID.put(visitCodes.get(i), icd10IDs);
         }
         bill.setVisitCodeToICD10ID(visitCodeToICD10ID);

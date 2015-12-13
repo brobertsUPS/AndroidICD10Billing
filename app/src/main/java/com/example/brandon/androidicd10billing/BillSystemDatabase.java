@@ -392,4 +392,18 @@ public class BillSystemDatabase extends SQLiteAssetHelper {
         c.moveToFirst();
         return c;
     }
+
+    public String getICD10WithID(int ICD10ID){
+        String icd10 = "";
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = {ICD10ID + ""};
+        Cursor c = db.rawQuery("Select ICD10_code FROM ICD10_condition WHERE ICD10_ID=?", args);
+        c.moveToFirst();
+
+        if (c != null && c.getCount() > 0) {
+            icd10 = c.getString(0);
+        }
+        db.close();
+        return icd10;
+    }
 }

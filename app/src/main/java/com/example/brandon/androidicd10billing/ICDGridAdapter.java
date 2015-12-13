@@ -24,10 +24,12 @@ public class ICDGridAdapter extends BaseAdapter {
     private Context context;
     private FragmentActivity billActivity;
     private ArrayList<Integer> icd10IDs;
+    public BillSystemDatabase db;
 
     public ICDGridAdapter(Context context, ArrayList<Integer> data, FragmentActivity billFragmentActivity) {
         billActivity = billFragmentActivity;
         icd10IDs= data;
+        db = new BillSystemDatabase(billActivity);
         this.context = context;
     }
 
@@ -58,7 +60,7 @@ public class ICDGridAdapter extends BaseAdapter {
         String icd10IDString = ""  + icd10IDs.get(position);
         //get the string from the icd10id to put in the grid adapter
 
-        holder.tv.setText(icd10IDString);
+        holder.tv.setText(db.getICD10WithID(icd10IDs.get(position)));
 
         return rowView;
     }
