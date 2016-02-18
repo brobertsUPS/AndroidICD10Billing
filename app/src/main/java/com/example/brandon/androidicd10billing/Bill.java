@@ -88,8 +88,6 @@ public class Bill {
         visitCodeToICD10ID = newVisitCodeToIC10ID;
     }
 
-
-
     public HashMap<String, Integer> getVisitCodeToModifierID(){
         return visitCodeToModifierID;
     }

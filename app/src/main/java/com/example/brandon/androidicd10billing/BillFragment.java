@@ -1,11 +1,13 @@
 package com.example.brandon.androidicd10billing;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -64,8 +66,23 @@ public class BillFragment extends Fragment{
         gv.setAdapter(new GridAdapter(super.getActivity(), bill, billActivity, this));
 
         setOnClickListeners();
-
         return billLayout;
+    }
+
+    /**
+     * Makes an alert message for when a user clicks the favorites item but don't have any favorites yet.
+     */
+    public void makeAlert(String message){
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+        alertDialog.setTitle("Ooops!");
+        alertDialog.setMessage(message);
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
     }
 
     public void saveBill(){
@@ -83,7 +100,8 @@ public class BillFragment extends Fragment{
             }
 //            System.out.println("PID IN BILL " + pID);
         }else{
-            System.out.println("Not Correct name");
+            makeAlert("The patient name appears to be incorrect. Please enter a patient's first and last name separated by a space.");
+            return;
         }
 
         int siteID = db.getSiteID(bill.site);//get the site ID
@@ -108,22 +126,25 @@ public class BillFragment extends Fragment{
                 db.insertDoctor(docNames[0], docNames[1], false);
                 referringDocID = db.getDoctorID(docNames[0], docNames[1]);
             }
-//            System.out.println(referringDocID);
+            System.out.println("referring doc id "+referringDocID);
         }else{
-            //invalid doctor name
+            makeAlert("The referring doctor name appears to be incorrect. Please enter the referring doctor's first and last name separated by a space.");
+            return;
         }
 
+        System.out.println("Admin " + bill.adminDoctor + " referring " + bill.referringDoctor);
         String[] adminDocNames = bill.adminDoctor.split(" ");
         int adminDocID = -1;
-        if(docNames.length > 1){
-            adminDocID = db.getDoctorID(adminDocNames[0], adminDocNames[1]);       //get referring doctor ID
+        if(adminDocNames.length > 1){
+            adminDocID = db.getDoctorID(adminDocNames[0], adminDocNames[1]);       //get admin doctor ID
             if(adminDocID == -1){
-                db.insertDoctor(docNames[0], docNames[1], false);
-                adminDocID = db.getDoctorID(docNames[0], docNames[1]);
+                db.insertDoctor(adminDocNames[0], adminDocNames[1], true);
+                adminDocID = db.getDoctorID(adminDocNames[0], adminDocNames[1]);
             }
-//            System.out.println(adminDocID);
+            System.out.println("admin doc id "+adminDocID);
         }else{
-            //invalid doctor name
+            makeAlert("The admin doctor name appears to be incorrect. Please enter the admin doctor's first and last name separated by a space.");
+            return;
         }
 //        System.out.println("AdminDocID " + adminDocID + " referringDocID " + referringDocID);
 
@@ -144,7 +165,7 @@ public class BillFragment extends Fragment{
 //        int billCompleteCheck = (billCompleteChecked) ? 1: 0;
 
         int aptID = db.addAppointmentToDatabase(pID, bill.date, siteID, roomID, 0, 0);//save with a default codeType and billComplete for now
-//        System.out.println("aptid " + aptID + " admin doc id " + adminDocID + " referringDocID " + referringDocID);
+        System.out.println("aptid " + aptID + " admin doc id " + adminDocID + " referringDocID " + referringDocID);
         db.addHasDoc(aptID, adminDocID);//add hasDoc admin
         db.addHasDoc(aptID, referringDocID);//add hasDoc referring
 
@@ -196,8 +217,8 @@ public class BillFragment extends Fragment{
         AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
         bill.setPatientName(patientTextView.getText().toString());
 
-//        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
-//        bill.setDOB(patientDOBTextView.getText().toString());
+        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.patient_dob); //Select the patient autocomplete textview
+        bill.setDOB(patientDOBTextView.getText().toString());
 
         AutoCompleteTextView adminDoctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_admin_doctor);
         bill.setAdminDoctor(adminDoctorTextView.getText().toString());
@@ -217,8 +238,8 @@ public class BillFragment extends Fragment{
         AutoCompleteTextView patientTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_patient); //Select the patient autocomplete textview
         patientTextView.setText(bill.patientName);
 
-//        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_date_of_birth); //Select the patient autocomplete textview
-//        patientDOBTextView.setText(bill.dob);
+        AutoCompleteTextView patientDOBTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.patient_dob); //Select the patient autocomplete textview
+        patientDOBTextView.setText(bill.dob);
 
         AutoCompleteTextView adminDoctorTextView = (AutoCompleteTextView) billLayout.findViewById(R.id.autocomplete_admin_doctor);
         adminDoctorTextView.setText(bill.adminDoctor);
